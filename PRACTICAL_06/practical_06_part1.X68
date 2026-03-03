@@ -17,10 +17,14 @@ START:
         LEA     MESSAGE, A1
         MOVE.B  #13, D0
         TRAP    #15
+        
+        SIMHALT
 
 END_PROG:
 
 MESSAGE: DC.B    'Trap Task Test', 0
+
+        END     START
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~

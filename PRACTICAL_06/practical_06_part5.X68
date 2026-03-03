@@ -27,11 +27,15 @@ HEADS_UP_DISPLAY:
 HEALTH:   DC.B 100
 MESSAGE:  DC.B 'Health: ', 0
 
+END:
+    SIMHALT
+    END START
 
 ;Review questions parameters to subroutines can be passed through the stack what other functions can be achieved through the stack, what observations have you made when opening VIEW | STACK ?
 ;In this program, the stack is used to pass the address of HEALTH to GAME_LOOP and to store the return address when JSR is executed.
 ;In VIEW | STACK, you would see the pushed parameter first, then the return address above it, and after RTS, the return address is removed and the stack pointer moves back up.
 ;Because this program does not clean up the parameter after the subroutine call, the value pushed with MOVE.L #HEALTH, -(SP) remains on the stack after RTS, meaning the stack pointer does not fully return to its original position unless manually adjusted.
+
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~
