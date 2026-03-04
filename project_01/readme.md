@@ -1,40 +1,40 @@
 Text-Based Game
 
 Story:
-You are a private mercenary on an infiltration mission in North Korea. Your point of interest is located in the outskirts of Pyongyang. It is a facility. You expect to see security there. As you get there, you notice it is abandoned. You enter it, and eventually come across an elevator. Each floor you take with this elevator will result in you being taken to a boss fight another world. The bosses themselves are embodiments of alternative physics.
+You are a private mercenary on an infiltration mission in North Korea. You are tasked with exfiltrating with 4 “artifacts”. Your point of interest is in the outskirts of Pyongyang. It is a facility. You expect to see security there. As you get there, you notice it is abandoned. You enter it, and eventually come across an elevator. Each floor you take with this elevator will result in you being taken to a boss fight another world. The bosses themselves are embodiments of alternative physics.
  
 Gameplay:
-Random weather events.
+Random weather event every 2 turns.
 You can choose to enter any of the 4 worlds (1 boss in each world) in any order.
-Based on the random events you attack the appropriate boss. For example, a boss that works better under wet conditions should be avoided until the weather event stops.
-Each boss will work differently.
-Defeating a boss grants you an item that can be used on other bosses.
-Leaving the facility faces you with resistance you cannot handle on your own.
-You can exfiltrate out of the hot zone only if you have all the boss weapons.
+Defeating a boss grants you an artifact. Having all artifacts allows you to escape the facility and exfiltrate out of the hot zone.
 
-Ideas:
-Boss: Glass Cannon boss (a cannon made of glass)
-Boss: Flying tank
-a boss who perceives weak attacks as strong and strong attacks as, with the weapon to defeat them being a squeaky toy hammer
-An item that depletes the boss energy to 0%
-An item that prevents the boss from making a move
+Bosses:
+Boss: Glass Cannon (a cannon made of glass). Health 60. Deals 25 damage. Drops Artifact A.
+Boss: Momentum Thief. Every time you attack: The boss stores the damage. On its turn, it returns previous turn’s total damage back at you + bonus. Health 100. Deals 2 + previous turn’s total damage. Drops Artifact B.
+Boss: Entropy Leech. Every turn: It drains 20 energy automatically. If the Energy Sword’s energy hits 0: Boss heals by 20. Health 150. Deals 20 damage. Drops Artifact C.
+Boss: Force Inverter. He perceives weak attacks as strong and strong attacks as weak. Drops Artifact D. Health 200. Deals 5 damage. If the player deals 10 damage, it takes 5 damage. If the player deals 5 damage, it deals 20 damage
 
 Battle mechanics:
-1) Basic attack
-2) Flee to elevator (you avoid taking damage, the boss and loses some of their energy)
-3) Use item (if you have any) (one item idea I have is that it would deplete the energy of the boss to 0%, or another one that prevents them from making a move in the next turn)
+1) Basic attack (10 damage. Drains 5 of Energy Sword’s energy)
+2) Flee to elevator (you go back to your save haven. Resets weather and you can pick which boss to fight. The boss you fought with keeps his current health)
+3) Use rifle (shoot 1 of 5 bullets to skip the boss’s turn. 0 damage)
 
 Resource Management:
-Health
-Energy Sword durability (it is set to 0 after an attack so it has to be recharged)
+Health (100)
+Energy Sword’s energy (100)
+Rifle ammunition (scarce resource, only 5 bullets – cannot be replenished)
+
+Weather Events:
+Rain = Heals you by 10 each turn
+Sun = Recharges energy sword’s energy by 20
+Fog = Weakens your attack by 5
 
 Endless Mode:
-Bosses respawn after being killed.
-Increase frequency of weather events every time a boss is killed.
+Bosses respawn after being killed. No artifacts are gained.
 
-Alternative Physics:
+Elements of Alternative Physics:
 • Glass Cannon = Fragile but extreme damage
-• Flying Tank = Heavy object defying gravity
-• Weak-is-Strong Boss = Inverted force logic
+• Momentum Thief = Conservation of momentum is reversed. Instead of damage disappearing, it carries over and amplifies.
+• Entropy Leech = Energy naturally flows from order to disorder — but here it steals the Energy Sword’s energy instead.
+• Force Inverter = Inverted force logic
 • Weather-altered combat = Environment alters physical laws
-
