@@ -491,63 +491,63 @@ ST_WEATHER_UNKNOWN:
 * GAMEPLAY
 *-------------------------------------------------------
 GAMEPLAY:
-    CLR.B PLAYER_ACTION
+    CLR.B PLAYER_ACTION        ; Clear the stored player action before reading new input
 
 PLAYER_INPUT_LOOP:
-    CLR.B INPUT_BUFFER
-    MOVE.W #2, D0
-    LEA INPUT_BUFFER, A1
-    TRAP #15
+    CLR.B INPUT_BUFFER        ; Clear input buffer
+    MOVE.W #2, D0            ; Trap code to read input
+    LEA INPUT_BUFFER, A1        ; Load address of input buffer
+    TRAP #15                    ; Read user input into buffer
 
-    MOVE.B (INPUT_BUFFER), D1
-    SUB.B #'0', D1
+    MOVE.B (INPUT_BUFFER), D1   ; Load first character of input into D1
+    SUB.B #'0', D1              ; Convert ASCII digit to numeric value
 
-    CMP.B #1, D1
-    BLT INVALID_ACTION
-    CMP.B #3, D1
-    BGT INVALID_ACTION
+    CMP.B #1, D1                ; Check if action is below valid range
+    BLT INVALID_ACTION            ; If <1, branch to invalid action handler
+    CMP.B #3, D1                ; Check if action exceeds valid range
+    BGT INVALID_ACTION            ; If >3, branch to invalid action handler
 
-    MOVE.B D1, PLAYER_ACTION
-    BRA PLAYER_ACTION_CHECK
+    MOVE.B D1, PLAYER_ACTION    ; Store valid player action
+    BRA PLAYER_ACTION_CHECK    ; Proceed to action handling
 
 INVALID_ACTION:
-    LEA INVALID_ACTION_MSG, A1
-    MOVE.W #13, D0
-    TRAP #15
-    BRA PLAYER_INPUT_LOOP
+    LEA INVALID_ACTION_MSG, A1    ; Load invalid action message
+    MOVE.W #13, D0                ; Trap code to print string
+    TRAP #15                        ; Display error message
+    BRA PLAYER_INPUT_LOOP        ; Repeat input loop
 
 PLAYER_ACTION_CHECK:
-    CMP.B #1, PLAYER_ACTION
-    BEQ PLAYER_ATTACK
-    CMP.B #2, PLAYER_ACTION
-    BEQ PLAYER_RIFLE
-    CMP.B #3, PLAYER_ACTION
-    BEQ PLAYER_FLEE
-    BRA GP_RETURN
+    CMP.B #1, PLAYER_ACTION        ; Check if action is attack
+    BEQ PLAYER_ATTACK                ; Branch to attack routine
+    CMP.B #2, PLAYER_ACTION        ; Check if action is rifle
+    BEQ PLAYER_RIFLE                ; Branch to rifle routine
+    CMP.B #3, PLAYER_ACTION        ; Check if action is flee
+    BEQ PLAYER_FLEE                ; Branch to flee routine
+    BRA GP_RETURN                    ; If none matched, return safely
 
 *-------------------------------------------------------
 * PLAYER ATTACK
 *-------------------------------------------------------
 PLAYER_ATTACK:
-    MOVE.B $4061, D2
-    CMP.B #1, D2
-    BEQ ATTACK_GC
-    CMP.B #2, D2
-    BEQ ATTACK_MT
-    CMP.B #3, D2
-    BEQ ATTACK_EL
-    CMP.B #4, D2
-    BEQ ATTACK_FI
-    BRA GP_RETURN
+    MOVE.B $4061, D2        ; Load current boss ID into D2
+    CMP.B #1, D2            ; Check if boss 1 (Glass Cannon)
+    BEQ ATTACK_GC           ; If yes, branch to Glass Cannon attack
+    CMP.B #2, D2            ; Check if boss 2 (Momentum Thief)
+    BEQ ATTACK_MT            ; If yes, branch to Momentum Thief attack
+    CMP.B #3, D2            ; Check if boss 3 (Entropy Leech)
+    BEQ ATTACK_EL            ; If yes, branch to Entropy Leech attack
+    CMP.B #4, D2            ; Check if boss 4 (Force Inverter)
+    BEQ ATTACK_FI            ; If yes, branch to Force Inverter attack
+    BRA GP_RETURN            ; If no valid boss, return to gameplay
 
-ATTACK_GC: MOVE.W $4010, D0
-    BRA APPLY_ATTACK
-ATTACK_MT: MOVE.W $4012, D0
-    BRA APPLY_ATTACK
-ATTACK_EL: MOVE.W $4014, D0
-    BRA APPLY_ATTACK
-ATTACK_FI: MOVE.W $4016, D0
-    BRA APPLY_ATTACK
+ATTACK_GC: MOVE.W $4010, D0    ; Load Glass Cannon HP into D0
+    BRA APPLY_ATTACK            ; Jump to common attack handling routine
+ATTACK_MT: MOVE.W $4012, D0    ; Load Momentum Thief HP into D0
+    BRA APPLY_ATTACK            ; Jump to common attack handling routine
+ATTACK_EL: MOVE.W $4014, D0    ; Load Entropy Leech HP into D0
+    BRA APPLY_ATTACK            ; Jump to common attack handling routine
+ATTACK_FI: MOVE.W $4016, D0    ; Load Force Inverter HP into D0
+    BRA APPLY_ATTACK            ; Jump to common attack handling routine
 
 *-------------------------------------------------------
 * APPLY_ATTACK
@@ -903,6 +903,7 @@ WELCOME_MSG:
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
+
 
 
 
