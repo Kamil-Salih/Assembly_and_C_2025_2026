@@ -526,38 +526,140 @@ PLAYER_ACTION_CHECK:
 
 
 *-------------------------------------------------------
-*-----------------------PLAYER ATTACK-------------------
-* THIS COULD BE USED FOR COLLISION DETECTION
+* PLAYER ATTACK
 *-------------------------------------------------------
-COLLISION:                  
-    MOVE.B  #DANGER_LOC,D1  ;MOVE LITERAL DANGER_LOC TO D1
-    CMP     #100,D1         ;  IS( X == 100)?
-    BNE     COLLISION_MISS  ;  IF NOT, BRANCH TO COLLISION_MISS
-    BSR     COLLISION_HIT   ;  ELSE, BRANCH TO COLLISION_HIT
-    RTS                     ;RETURN FROM COLLISION: SUBROUTINE  
-COLLISION_HIT:
-    LEA     HIT_MSG,A1      ;ASSIGN MESSAGE TO ADDRESS REGISTER A1
-    MOVE    #14,D0          ;MOVE LITERAL 14 TO DO
-    TRAP    #15             ;TRAP AND INTERPRET VALUE IN D0
-    RTS                     ;RETURN FROM COLLISION_HIT: SUBROUTINE
-    
-COLLISION_MISS:
-    LEA     MISS_MSG,A1		;ASSIGN MESSAGE TO ADDRESS REGISTER A1
-    MOVE    #14,D0          ;MOVE LITERAL 14 TO DO
-    TRAP    #15             ;TRAP AND INTERPRET VALUE IN D0
-    RTS                     ;RETURN FROM COLLISION_MISS: SUBROUTINE
+PLAYER_ATTACK:
+    MOVE.B $4061, D2
+    CMP.B #1, D2
+    BEQ ATTACK_GC
+    CMP.B #2, D2
+    BEQ ATTACK_MT
+    CMP.B #3, D2
+    BEQ ATTACK_EL
+    CMP.B #4, D2
+    BEQ ATTACK_FI
+    BRA GP_RETURN
+
+ATTACK_GC: MOVE.W $4010, D0
+    BRA APPLY_ATTACK
+ATTACK_MT: MOVE.W $4012, D0
+    BRA APPLY_ATTACK
+ATTACK_EL: MOVE.W $4014, D0
+    BRA APPLY_ATTACK
+ATTACK_FI: MOVE.W $4016, D0
+    BRA APPLY_ATTACK
+
+OUTINE
 
 *-------------------------------------------------------
-*--------------------------LOOP-------------------------
+* APPLY_ATTACK
 *-------------------------------------------------------
-LOOP:
-    MOVE.B  #5, D3          ;LOOP COUNTER D3=5
-NEXT:
-    LEA     LOOP_MSG,A1     ;ASSIGN MESSAGE TO ADDRESS REGISTER A1
-    MOVE.B  #14,D0          ;MOVE LITERAL 14 TO DO          
-    TRAP    #15             ;TRAP AND INTERPRET VALUE IN D0
-    SUB     #1,D3           ;DECREMENT LOOP COUNTER
-    BNE     NEXT            ;REPEAT UNTIL D0=0
+APPLY_ATTACK:
+    ; Check Energy First
+    MOVE.B $4001, D3        
+    CMP.B #0, D3
+    BEQ ATTACK_NO_ENERGY
+
+    ; Force Inverter Logic Check
+    MOVE.B $4061, D2        ; Current Boss
+    CMP.B #4, D2            ; Is it Force Inverter?
+    BNE NORMAL_DMG_CALC
+    
+    MOVE.B $4006, D3        ; Current Weather
+    CMP.B #2, D3            ; Is it Fog?
+    BNE NORMAL_DMG_CALC
+    MOVE.W #20, D1          ; Fog Inversion: Deal 20 Damage
+    BRA APPLY_SUBTRACTION
+
+NORMAL_DMG_CALC:
+    MOVE.W #10, D1          ; Base Damage
+    MOVE.B $4004, D2        ; Fog Penalty
+    EXT.W D2
+    SUB.W D2, D1            ; Reduce damage by fog penalty
+    CMP.W #0, D1
+    BGE APPLY_SUBTRACTION
+    MOVE.W #0, D1
+
+APPLY_SUBTRACTION:
+    SUB.W D1, D0            ; Subtract damage from boss HP
+    TST.W D0
+    BMI SET_HP_ZERO         
+    BRA STORE_HP
+
+SET_HP_ZERO:
+    MOVE.W #0, D0
+
+STORE_HP:
+    MOVE.B $4061, D2
+    CMP.B #1, D2
+    BEQ ST_GC
+    CMP.B #2, D2
+    BEQ ST_MT
+    CMP.B #3, D2
+    BEQ ST_EL
+    CMP.B #4, D2
+    BEQ ST_FI
+    BRA POST_ATTACK
+
+ST_GC: MOVE.W D0, $4010
+    BRA POST_ATTACK
+ST_MT: MOVE.W D0, $4012
+    BRA POST_ATTACK
+ST_EL: MOVE.W D0, $4014
+    BRA POST_ATTACK
+ST_FI: MOVE.W D0, $4016
+
+POST_ATTACK:
+    MOVE.B $4001, D0        ; Reduce Energy
+    SUB.B #5, D0
+    CMP.B #0, D0
+    BGE OK_EN
+    MOVE.B #0, D0
+OK_EN:
+    MOVE.B D0, $4001
+    MOVE.B D1, $4062        ; Store for Momentum Thief
+    BRA GP_RETURN
+
+ATTACK_NO_ENERGY:
+    MOVE.W #0, D1           ; No energy = 0 damage
+    BRA APPLY_SUBTRACTION
+
+*-------------------------------------------------------
+* PLAYER RIFLE
+*-------------------------------------------------------
+PLAYER_RIFLE:
+    MOVE.B $4002, D0        
+    CMP.B #0, D0
+    BEQ NO_AMMO             
+
+    SUB.B #1, D0            
+    MOVE.B D0, $4002        
+
+    MOVE.B #2, SKIP_BOSS_TURN  
+    BRA GP_RETURN
+
+NO_AMMO:
+    MOVE.B #0, SKIP_BOSS_TURN 
+    LEA NO_AMMO_MSG, A1
+    MOVE.W #13, D0
+    TRAP #15
+    BRA GP_RETURN
+
+*-------------------------------------------------------
+* PLAYER FLEE
+*-------------------------------------------------------
+PLAYER_FLEE:
+    MOVE.B #0, $4004
+    MOVE.B #0, $4005
+    MOVE.B #0, $4006
+    MOVE.B #0, $4061
+    CLR.W   $4008
+    MOVE.B #0, $4062
+    MOVE.B #0, SKIP_BOSS_TURN
+    BRA GP_RETURN
+
+GP_RETURN:
+    RTS
 
 *-------------------------------------------------------
 *------------------SCREEN DECORATION--------------------
@@ -681,6 +783,7 @@ WELCOME_MSG:
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
+
 
 
 
