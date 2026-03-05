@@ -119,40 +119,41 @@ END_GAME:
 *-------------------------------------------------------
 * WELCOME (only at start)
 *-------------------------------------------------------
-WELCOME:
-    LEA WELCOME_MSG, A1
-    MOVE.W #13, D0
-    TRAP #15
-    BSR CONTINUE
+WELCOME:                    ; Load address of the welcome message string into A1
+    LEA WELCOME_MSG, A1     ; Load trap code 13 (print string) into D0
+    MOVE.W #13, D0          ; System call to print the welcome message
+    TRAP #15                ; Call subroutine to wait for player input to continue
+    BSR CONTINUE            ; Return from subroutine
     RTS
 
 *-------------------------------------------------------
 * RANDOM NUMBER (0–2)
 *-------------------------------------------------------
 RANDOM_NUMBER:
-    MOVE.W #8, D0
-    TRAP #15
-    MOVE.W D1, D0
-    ANDI.W #3, D0
-    CMP.W #3, D0
-    BNE RN_OK
-    MOVE.W #2, D0
+    MOVE.W #8, D0        ; Load trap task 8 (generate random number) into D0
+    TRAP #15             ; Call system trap to generate random value (returned in D1)
+    MOVE.W D1, D0        ; Copy generated random value from D1 into D0
+    ANDI.W #3, D0        ; Mask value with 3 to limit result to range 0–3
+    CMP.W #3, D0         ; Compare result with 3
+    BNE RN_OK            ; If result is not 3, branch to RN_OK
+    MOVE.W #2, D0        ; If result was 3, change it to 2 to keep range 0–2
 RN_OK:
-    RTS
+    RTS                  ; Return with random number (0–2) in D0
 
 *-------------------------------------------------------
 * SELECT_BOSS_IF_NONE (with validation 1–4)
 *-------------------------------------------------------
 SELECT_BOSS_IF_NONE:
-    MOVE.B $4061, D0
-    CMP.B #1, D0
-    BLT SB_NEED_SELECT
-    CMP.B #4, D0
-    BGT SB_NEED_SELECT
-    RTS
+    MOVE.B $4061, D0    ; Load current boss selection from memory address $4061 into D0
+    CMP.B #1, D0        ; Compare selected boss value with 1 (minimum valid boss)
+    BLT SB_NEED_SELECT  ; If value is less than 1, branch to request boss selection
+    CMP.B #4, D0        ; Compare selected boss value with 4 (maximum valid boss)
+    BGT SB_NEED_SELECT  ; If value is greater than 4, branch to request boss selection
+    RTS                 ; Otherwise boss selection is valid, return
+
 SB_NEED_SELECT:
-    BSR SELECT_BOSS
-    RTS
+    BSR SELECT_BOSS     ; Call subroutine to prompt player to choose a boss
+    RTS                 ; Return after boss selection
 
 *-------------------------------------------------------
 * BOSS INPUT LOOP
@@ -902,6 +903,7 @@ WELCOME_MSG:
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
+
 
 
 
