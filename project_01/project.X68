@@ -307,49 +307,49 @@ RTS_GAMELOOP_SKIP:
 * UPDATE (weather)
 *-------------------------------------------------------
 UPDATE:
-    MOVE.B $4005, D0
-    ADD.B #1, D0
-    MOVE.B D0, $4005
+    MOVE.B $4005, D0        ; Load current turn counter into D0
+    ADD.B #1, D0            ; Increment turn counter by 1
+    MOVE.B D0, $4005        ; Store updated turn counter back to memory
 
-    AND.B #1, D0
-    BNE WEATHER_EVENT_SKIP
+    AND.B #1, D0              ; Check if turn number is odd/even (mask lowest bit)
+    BNE WEATHER_EVENT_SKIP    ; If odd turn, skip weather event
 
-    BSR RANDOM_NUMBER
-    MOVE.B D0, $4006
+    BSR RANDOM_NUMBER        ; Generate random number (0–2) for weather type
+    MOVE.B D0, $4006         ; Store weather type in memory
 
-    CMP.B #0, $4006
-    BEQ WEATHER_RAIN
-    CMP.B #1, $4006
-    BEQ WEATHER_SUN
-    CMP.B #2, $4006
-    BEQ WEATHER_FOG
-    BRA WEATHER_EVENT_SKIP
+    CMP.B #0, $4006            ; Check if weather type is rain
+    BEQ WEATHER_RAIN           ; If rain, branch to rain effect
+    CMP.B #1, $4006            ; Check if weather type is sun
+    BEQ WEATHER_SUN            ; If sun, branch to sun effect
+    CMP.B #2, $4006            ; Check if weather type is fog
+    BEQ WEATHER_FOG            ; If fog, branch to fog effect
+    BRA WEATHER_EVENT_SKIP     ; Otherwise skip weather effects
 
 WEATHER_RAIN:
-    MOVE.B $4000, D0
-    ADD.B #10, D0
-    CMP.B #MAX_HEALTH, D0
-    BLE RAIN_OK
-    MOVE.B #MAX_HEALTH, D0
+    MOVE.B $4000, D0            ; Load player health
+    ADD.B #10, D0                ; Increase health by 10 due to rain effect
+    CMP.B #MAX_HEALTH, D0        ; Compare with maximum allowed health
+    BLE RAIN_OK                    ; If within limit, keep value
+    MOVE.B #MAX_HEALTH, D0        ; Otherwise cap health at MAX_HEALTH
 RAIN_OK:
-    MOVE.B D0, $4000
-    MOVE.B #0, $4004
-    BRA WEATHER_EVENT_SKIP
+    MOVE.B D0, $4000            ; Store updated health back to memory
+    MOVE.B #0, $4004            ; Clear fog penalty
+    BRA WEATHER_EVENT_SKIP        ; Exit weather processing
 
 WEATHER_SUN:
-    MOVE.B $4001, D0
-    ADD.B #40, D0            
-    CMP.B #MAX_ENERGY, D0
-    BLE SUN_OK
-    MOVE.B #MAX_ENERGY, D0
+    MOVE.B $4001, D0            ; Load player energy
+    ADD.B #40, D0                ; Increase energy by 40 due to sunlight
+    CMP.B #MAX_ENERGY, D0        ; Compare with maximum allowed energy
+    BLE SUN_OK                    ; If within limit, keep value
+    MOVE.B #MAX_ENERGY, D0        ; Otherwise cap energy at MAX_ENERGY
 SUN_OK:
-    MOVE.B D0, $4001
-    MOVE.B #0, $4004
-    BRA WEATHER_EVENT_SKIP
+    MOVE.B D0, $4001                ; Store updated energy back to memory
+    MOVE.B #0, $4004                ; Clear fog penalty
+    BRA WEATHER_EVENT_SKIP          ; Exit weather processing
 
 WEATHER_FOG:
-    MOVE.B #5, $4004
-    BRA WEATHER_EVENT_SKIP
+    MOVE.B #5, $4004            ; Apply fog penalty of 5 damage reduction
+    BRA WEATHER_EVENT_SKIP         ; Exit weather processing
 
 WEATHER_EVENT_SKIP:
     RTS
@@ -903,6 +903,7 @@ WELCOME_MSG:
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
+
 
 
 
