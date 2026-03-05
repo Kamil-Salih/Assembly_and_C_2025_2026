@@ -30,8 +30,8 @@ Sun = Recharges energy sword’s energy by 20
 Fog = Weakens your attack by 5
 
 Elements of Alternative Physics:
-• Glass Cannon = Fragile but extreme damage
-• Momentum Thief = Conservation of momentum is reversed. Instead of damage disappearing, it carries over and amplifies.
-• Entropy Leech = Energy naturally flows from order to disorder — but here it steals the Energy Sword’s energy instead.
-• Force Inverter = Inverted force logic
-• Weather-altered combat = Environment alters physical laws
+Glass Cannon = Fragile but extreme damage
+Momentum Thief = Conservation of momentum is reversed. Instead of damage disappearing, it carries over and amplifies.
+Entropy Leech = Energy naturally flows from order to disorder — but here it steals the Energy Sword’s energy instead.
+Force Inverter = Inverted force logic
+Weather-altered combat = Environment alters physical laws
