@@ -159,67 +159,67 @@ SB_NEED_SELECT:
 * BOSS INPUT LOOP
 *-------------------------------------------------------
 BOSS_INPUT_LOOP:
-    CLR.B INPUT_BUFFER
-    MOVE.W #2, D0
-    LEA INPUT_BUFFER, A1
-    TRAP #15
+    CLR.B INPUT_BUFFER            ; Clear the input buffer byte before reading new input
+    MOVE.W #2, D0                 ; Load trap task 2 (read character/string input)
+    LEA INPUT_BUFFER, A1          ; Load address of INPUT_BUFFER into A1 for input storage
+    TRAP #15                      ; Call system trap to read user input
 
-    MOVE.B (INPUT_BUFFER), D1
-    SUB.B #'0', D1
+    MOVE.B (INPUT_BUFFER), D1     ; Move the first character from the input buffer into D1
+    SUB.B #'0', D1                ; Convert ASCII digit to numeric value by subtracting '0'
 
-    CMP.B #1, D1
-    BLT INVALID_BOSS_INPUT
-    CMP.B #4, D1
-    BGT INVALID_BOSS_INPUT
+    CMP.B #1, D1                  ; Compare input with 1 (minimum valid boss number)
+    BLT INVALID_BOSS_INPUT        ; If input < 1, branch to invalid input handler code
+    CMP.B #4, D1                  ; Compare input with 4 (maximum valid boss number)
+    BGT INVALID_BOSS_INPUT        ; If input > 4, branch to invalid input handler code
 
-    CMP.B #1, D1
-    BEQ CHK_B1
-    CMP.B #2, D1
-    BEQ CHK_B2
-    CMP.B #3, D1
-    BEQ CHK_B3
-    CMP.B #4, D1
-    BEQ CHK_B4
+    CMP.B #1, D1                  ; Check if player selected boss 1
+    BEQ CHK_B1                    ; If yes, branch to boss 1 validation
+    CMP.B #2, D1                  ; Check if player selected boss 2
+    BEQ CHK_B2                    ; If yes, branch to boss 2 validation
+    CMP.B #3, D1                  ; Check if player selected boss 3
+    BEQ CHK_B3                    ; If yes, branch to boss 3 validation
+    CMP.B #4, D1                  ; Check if player selected boss 4
+    BEQ CHK_B4                    ; If yes, branch to boss 4 validation
 
 CHK_B1:
-    MOVE.B BOSS1_DEAD, D2
-    CMP.B #1, D2
-    BEQ BOSS_ALREADY_DEAD
-    BRA BOSS_OK
+    MOVE.B BOSS1_DEAD, D2         ; Load boss 1 defeated flag into D2
+    CMP.B #1, D2                  ; Check if boss 1 is already defeated
+    BEQ BOSS_ALREADY_DEAD         ; If defeated, inform player and re-prompt
+    BRA BOSS_OK                   ; Otherwise boss selection is valid
 
 CHK_B2:
-    MOVE.B BOSS2_DEAD, D2
-    CMP.B #1, D2
-    BEQ BOSS_ALREADY_DEAD
-    BRA BOSS_OK
+    MOVE.B BOSS2_DEAD, D2         ; Load boss 2 defeated flag into D2
+    CMP.B #1, D2                  ; Check if boss 2 is already defeated
+    BEQ BOSS_ALREADY_DEAD         ; If defeated, inform player and re-prompt
+    BRA BOSS_OK                   ; Otherwise boss selection is valid
 
 CHK_B3:
-    MOVE.B BOSS3_DEAD, D2
-    CMP.B #1, D2
-    BEQ BOSS_ALREADY_DEAD
-    BRA BOSS_OK
+    MOVE.B BOSS3_DEAD, D2         ; Load boss 3 defeated flag into D2
+    CMP.B #1, D2                  ; Check if boss 3 is already defeated
+    BEQ BOSS_ALREADY_DEAD         ; If defeated, inform player and re-prompt
+    BRA BOSS_OK                   ; Otherwise boss selection is valid
 
 CHK_B4:
-    MOVE.B BOSS4_DEAD, D2
-    CMP.B #1, D2
-    BEQ BOSS_ALREADY_DEAD
-    BRA BOSS_OK
+    MOVE.B BOSS4_DEAD, D2         ; Load boss 4 defeated flag into D2
+    CMP.B #1, D2                  ; Check if boss 4 is already defeated
+    BEQ BOSS_ALREADY_DEAD         ; If defeated, inform player and re-prompt
+    BRA BOSS_OK                   ; Otherwise boss selection is valid
 
 BOSS_ALREADY_DEAD:
-    LEA BOSS_DEAD_MSG, A1
-    MOVE.W #13, D0
-    TRAP #15
-    BRA BOSS_INPUT_LOOP
+    LEA BOSS_DEAD_MSG, A1         ; Load address of message indicating boss is already defeated
+    MOVE.W #13, D0                ; Load trap code 13 (print string)
+    TRAP #15                      ; Display the message
+    BRA BOSS_INPUT_LOOP           ; Loop back to prompt player for another boss selection
 
 BOSS_OK:
-    MOVE.B D1, $4061
-    RTS
+    MOVE.B D1, $4061               ; Store the valid selected boss number into memory $4061
+    RTS                            ; Return from subroutine
 
 INVALID_BOSS_INPUT:
-    LEA INVALID_BOSS_MSG, A1
-    MOVE.W #13, D0
-    TRAP #15
-    BRA BOSS_INPUT_LOOP
+    LEA INVALID_BOSS_MSG, A1       ; Load address of invalid input message
+    MOVE.W #13, D0                 ; Load trap code 13 (print string)
+    TRAP #15                       ; Display the invalid input message
+    BRA BOSS_INPUT_LOOP            ; Loop back to prompt player again
 
 *-------------------------------------------------------
 * SELECT BOSS
@@ -903,6 +903,7 @@ WELCOME_MSG:
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
+
 
 
 
