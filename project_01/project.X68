@@ -274,18 +274,86 @@ ALL_BOSSES_DEFEATED:
     BRA END_GAME
 
 *-------------------------------------------------------
-*-----------------DRAW QUEST UPDATES--------------------
-* DRAW THE GAME PROGRESS INFORMATION, STATUS REGARDING
-* QUEST
-*------------------------------------------------------- 
-DRAW:
-    BSR     ENDL            ;BRANCH TO ENDL SUBROUTINE            
-    BSR     DECORATE        ;BRANCH TO DECORATE SUBROUTINE    
-    LEA     DRAW_MSG,A1     ;ASSIGN MESSAGE TO ADDRESS REGISTER A1     
-    MOVE.B  #14,D0          ;MOVE LITERAL 14 TO DO
-    TRAP    #15             ;TRAP AND INTERPRET VALUE IN D0
-    BSR     DECORATE        ;BRANCH TO DECORATE SUBROUTINE
-    RTS                     ;RETURN FROM DRAW: SUBROUTINE
+* GAMELOOP
+*-------------------------------------------------------
+GAMELOOP:
+    MOVE.B $4061, D0
+    CMP.B #0, D0
+    BEQ NO_BOSS_PROMPT
+
+    LEA INPUT_MSG, A1
+    MOVE.W #13, D0
+    TRAP #15
+
+    BSR GAMEPLAY
+    BSR APPLY_BOSS_MECH    
+
+    MOVE.B $4061, D0
+    CMP.B #0, D0
+    BEQ RTS_GAMELOOP_SKIP
+
+    BSR UPDATE
+    BSR STATS
+    RTS
+
+NO_BOSS_PROMPT:
+    BSR SELECT_BOSS
+    RTS
+
+RTS_GAMELOOP_SKIP:
+    RTS
+
+*-------------------------------------------------------
+* UPDATE (weather)
+*-------------------------------------------------------
+UPDATE:
+    MOVE.B $4005, D0
+    ADD.B #1, D0
+    MOVE.B D0, $4005
+
+    AND.B #1, D0
+    BNE WEATHER_EVENT_SKIP
+
+    BSR RANDOM_NUMBER
+    MOVE.B D0, $4006
+
+    CMP.B #0, $4006
+    BEQ WEATHER_RAIN
+    CMP.B #1, $4006
+    BEQ WEATHER_SUN
+    CMP.B #2, $4006
+    BEQ WEATHER_FOG
+    BRA WEATHER_EVENT_SKIP
+
+WEATHER_RAIN:
+    MOVE.B $4000, D0
+    ADD.B #10, D0
+    CMP.B #MAX_HEALTH, D0
+    BLE RAIN_OK
+    MOVE.B #MAX_HEALTH, D0
+RAIN_OK:
+    MOVE.B D0, $4000
+    MOVE.B #0, $4004
+    BRA WEATHER_EVENT_SKIP
+
+WEATHER_SUN:
+    MOVE.B $4001, D0
+    ADD.B #40, D0            
+    CMP.B #MAX_ENERGY, D0
+    BLE SUN_OK
+    MOVE.B #MAX_ENERGY, D0
+SUN_OK:
+    MOVE.B D0, $4001
+    MOVE.B #0, $4004
+    BRA WEATHER_EVENT_SKIP
+
+WEATHER_FOG:
+    MOVE.B #5, $4004
+    BRA WEATHER_EVENT_SKIP
+
+WEATHER_EVENT_SKIP:
+    RTS
+
 
 *-------------------------------------------------------
 *---GAME PLAY (QUEST PROGRESS)--------------------------
@@ -473,5 +541,6 @@ WELCOME_MSG:
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
+
 
 
