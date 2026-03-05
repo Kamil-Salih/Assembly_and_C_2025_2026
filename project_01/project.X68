@@ -626,34 +626,34 @@ ATTACK_NO_ENERGY:
 * PLAYER RIFLE
 *-------------------------------------------------------
 PLAYER_RIFLE:
-    MOVE.B $4002, D0        
-    CMP.B #0, D0
-    BEQ NO_AMMO             
+    MOVE.B $4002, D0           ; Load current ammo count into D0
+    CMP.B #0, D0                ; Check if ammo is zero
+    BEQ NO_AMMO                 ; If no ammo, branch to NO_AMMO handling
 
-    SUB.B #1, D0            
-    MOVE.B D0, $4002        
+    SUB.B #1, D0                ; Decrement ammo by 1
+    MOVE.B D0, $4002            ; Store updated ammo count
 
-    MOVE.B #2, SKIP_BOSS_TURN  
-    BRA GP_RETURN
+    MOVE.B #2, SKIP_BOSS_TURN      ; Set boss skip counter to 2 (boss loses next 2 turns)
+    BRA GP_RETURN                    ; Return to gameplay
 
 NO_AMMO:
-    MOVE.B #0, SKIP_BOSS_TURN 
-    LEA NO_AMMO_MSG, A1
-    MOVE.W #13, D0
-    TRAP #15
-    BRA GP_RETURN
+    MOVE.B #0, SKIP_BOSS_TURN     ; No ammo, no skip applied
+    LEA NO_AMMO_MSG, A1            ; Load message indicating no ammo
+    MOVE.W #13, D0                ; Trap code to print string
+    TRAP #15                        ; Display "no ammo" message
+    BRA GP_RETURN                ; Return to gameplay
 
 *-------------------------------------------------------
 * PLAYER FLEE
 *-------------------------------------------------------
 PLAYER_FLEE:
-    MOVE.B #0, $4004
-    MOVE.B #0, $4005
-    MOVE.B #0, $4006
-    MOVE.B #0, $4061
-    CLR.W   $4008
-    MOVE.B #0, $4062
-    MOVE.B #0, SKIP_BOSS_TURN
+    MOVE.B #0, $4004        ; Clear fog penalty
+    MOVE.B #0, $4005        ; Reset turn counter
+    MOVE.B #0, $4006        ; Clear weather type
+    MOVE.B #0, $4061        ; Clear current boss selection
+    CLR.W   $4008            ; Clear stored momentum damage
+    MOVE.B #0, $4062            ; Reset last player damage
+    MOVE.B #0, SKIP_BOSS_TURN    ; Reset boss skip counter
     BRA GP_RETURN
 
 GP_RETURN:
@@ -665,75 +665,75 @@ GP_RETURN:
 APPLY_BOSS_MECH:
     MOVE.B $4001, $4064     ; Save energy for Entropy check
 
-    MOVE.B SKIP_BOSS_TURN, D7
-    CMP.B #0, D7
-    BEQ CONT_BOSS_CHECK
-    SUB.B #1, D7
-    MOVE.B D7, SKIP_BOSS_TURN
-    BRA BOSS_END
+    MOVE.B SKIP_BOSS_TURN, D7    ; Load boss skip counter
+    CMP.B #0, D7                ; Check if boss should skip turn
+    BEQ CONT_BOSS_CHECK         ; If 0, continue boss action
+    SUB.B #1, D7                ; Decrement skip counter
+    MOVE.B D7, SKIP_BOSS_TURN    ; Store updated skip counter
+    BRA BOSS_END                ; Skip boss turn
 
 CONT_BOSS_CHECK:
-    MOVE.B $4061, D0
+    MOVE.B $4061, D0            ; Load current boss ID
     CMP.B #1, D0
-    BEQ BOSS_GC
+    BEQ BOSS_GC                ; Boss 1 (Glass Cannon)
     CMP.B #2, D0
-    BEQ BOSS_MT
+    BEQ BOSS_MT                ; Boss 2 (Momentum Thief)
     CMP.B #3, D0
-    BEQ BOSS_EL
+    BEQ BOSS_EL                ; Boss 3 (Entropy Leech)
     CMP.B #4, D0
-    BEQ BOSS_FI
-    BRA BOSS_END
+    BEQ BOSS_FI                ; Boss 4 (Force Inverter)
+    BRA BOSS_END                ; No valid boss, end boss phase
 
 BOSS_GC:
-    MOVE.W $4010, D1
+    MOVE.W $4010, D1            ; Load Glass Cannon HP
     CMP.W #0, D1
-    BNE GC_ACT
-    MOVE.B BOSS1_DEAD, D2
+    BNE GC_ACT                    ; If HP > 0, perform action
+    MOVE.B BOSS1_DEAD, D2        ; Check if already marked dead
     CMP.B #1, D2
     BEQ BOSS_END
-    MOVE.B #1, BOSS1_DEAD
+    MOVE.B #1, BOSS1_DEAD        ; Mark boss as defeated
     MOVE.B $4003, D0
-    ADD.B #1, D0
+    ADD.B #1, D0                ; Increment artifact
     MOVE.B D0, $4003
-    LEA BOSS1_DEFEAT_MSG, A1
-    BSR DEFEAT_RESTORE
+    LEA BOSS1_DEFEAT_MSG, A1    ; Load defeat message
+    BSR DEFEAT_RESTORE            ; Handle rewards and healing
     BRA BOSS_END
 GC_ACT:
-    MOVE.B $4000, D0
-    SUB.B #20, D0
-    BRA BOSS_DMG_LIMIT
+    MOVE.B $4000, D0            ; Load player health
+    SUB.B #20, D0                ; Glass Cannon attacks with 20 damage
+    BRA BOSS_DMG_LIMIT           ; Apply damage limit check
 
 BOSS_MT:
-    MOVE.W $4012, D1
+    MOVE.W $4012, D1            ; Load Momentum Thief HP
     CMP.W #0, D1
-    BNE MT_ACT
+    BNE MT_ACT                    ; If alive, perform action
     MOVE.B BOSS2_DEAD, D3
     CMP.B #1, D3
     BEQ BOSS_END
-    MOVE.B #1, BOSS2_DEAD
+    MOVE.B #1, BOSS2_DEAD        ; Mark as defeated
     MOVE.B $4003, D3
-    ADD.B #1, D3
+    ADD.B #1, D3                ; Increment artifact
     MOVE.B D3, $4003
     LEA BOSS2_DEFEAT_MSG, A1
     BSR DEFEAT_RESTORE
     BRA BOSS_END
 MT_ACT:
     CLR.W D0
-    MOVE.W $4008, D0
-    ADD.W #2, D0
-    MOVE.B $4000, D1
-    SUB.B D0, D1
-    MOVE.B D1, $4000
-    CLR.W $4008
+    MOVE.W $4008, D0            ; Retrieve stored Momentum damage
+    ADD.W #2, D0                ; Increment momentum damage by 2
+    MOVE.B $4000, D1            ; Load player health
+    SUB.B D0, D1                ; Apply Momentum Thief damage
+    MOVE.B D1, $4000            ; Store updated health
+    CLR.W $4008                ; Reset momentum storage
     CLR.L D0
-    MOVE.B $4062, D0
-    MOVE.W D0, $4008
+    MOVE.B $4062, D0            ; Load last player damage
+    MOVE.W D0, $4008            ; Store for next Momentum calculation
     BRA BOSS_END
 
 BOSS_EL:
-    MOVE.W $4014, D1
+    MOVE.W $4014, D1            ; Load Entropy Leech HP
     CMP.W #0, D1
-    BNE EL_ACT
+    BNE EL_ACT                    ; If alive, perform action
     MOVE.B BOSS3_DEAD, D2
     CMP.B #1, D2
     BEQ BOSS_END
@@ -745,29 +745,29 @@ BOSS_EL:
     BSR DEFEAT_RESTORE
     BRA BOSS_END
 EL_ACT:
-    MOVE.B $4064, D2        
-    MOVE.B $4001, D0        
-    SUB.B #10, D0
+    MOVE.B $4064, D2            ; Saved player energy at start
+    MOVE.B $4001, D0            ; Current energy
+    SUB.B #10, D0               ; Reduce energy by 10
     CMP.B #0, D0
     BGE OK_EL
     MOVE.B #0, D0
 OK_EL:
     MOVE.B D0, $4001
-    CMP.B #0, D2            
+    CMP.B #0, D2            ; If energy changed, skip heal
     BEQ SKIP_EL_HEAL
-    CMP.B #0, D0            
+    CMP.B #0, D0            ; If energy > 0, skip heal
     BNE SKIP_EL_HEAL
-    MOVE.W $4014, D0
-    ADD.W #10, D0
+    MOVE.W $4014, D0       
+    ADD.W #10, D0            ; Heal boss by 10
     MOVE.W D0, $4014
 SKIP_EL_HEAL:
     MOVE.B $4000, D3
-    SUB.B #5, D3
+    SUB.B #5, D3            ; Damage player 5 HP
     MOVE.B D3, $4000
     BRA BOSS_END
 
 BOSS_FI:
-    MOVE.W $4016, D1
+    MOVE.W $4016, D1        ; Load Force Inverter HP
     CMP.W #0, D1
     BNE FI_ACT
     MOVE.B BOSS4_DEAD, D2
@@ -796,19 +796,19 @@ OK_LIMIT:
 
 DEFEAT_RESTORE:
     MOVE.W #13, D0
-    TRAP #15
-    MOVE.B #MAX_HEALTH, $4000
+    TRAP #15                        ; Display boss defeat message
+    MOVE.B #MAX_HEALTH, $4000        ; Restore player health
     LEA HEALED_MSG, A1
     MOVE.W #13, D0
-    TRAP #15
-    MOVE.B #MAX_ENERGY, $4001
+    TRAP #15                         ; Display healed message
+    MOVE.B #MAX_ENERGY, $4001        ; Restore player energy
     LEA ENERGY_REPLENISHED_MSG, A1
     MOVE.W #13, D0
-    TRAP #15
-    MOVE.B #0, $4061
-    CLR.W $4008
-    MOVE.B #0, SKIP_BOSS_TURN
-    BSR SELECT_BOSS
+    TRAP #15                        ; Display energy replenished message
+    MOVE.B #0, $4061                ; Clear current boss
+    CLR.W $4008                    ; Clear momentum storage
+    MOVE.B #0, SKIP_BOSS_TURN        ; Clear skip counter
+    BSR SELECT_BOSS                ; Prompt player to select next boss
     RTS
 
 BOSS_END:
@@ -818,7 +818,7 @@ BOSS_END:
     LEA MISSION_FAILED_MSG, A1
     MOVE.W #13, D0
     TRAP #15
-    SIMHALT
+    SIMHALT            ; Player died, so end the simulation
 BOSS_RET:
     RTS
 
@@ -903,6 +903,7 @@ WELCOME_MSG:
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
+
 
 
 
