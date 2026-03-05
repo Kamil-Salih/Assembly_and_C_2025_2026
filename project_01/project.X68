@@ -6,13 +6,30 @@
 * Description:   You’re a mercenary infiltrating a mysterious facility, battling physics-defying bosses to collect four artifacts and escape—or face death.
 * Known Bugs:    None
 *-----------------------------------------------------------
+
+	ORG $1000	;STARTING MEMORY ADDRESS FOR THE PROGRAM $1000
+
 *-------------------------------------------------------
-* STARTING MEMORY ADDRESS FOR THE PROGRAM $1000
+* CONSTANTS
 *-------------------------------------------------------
-	ORG $1000
-*-------------------------------------------------------
-*CHOOSE TO BE A MINI KNIGHT OR A TINY EXPLORER
-*-------------------------------------------------------
+EXIT            EQU 0
+MAX_HEALTH      EQU 100
+MAX_ENERGY      EQU 100
+MAX_AMMO        EQU 5
+NUM_ARTIFACTS   EQU 4
+
+GLASS_CANNON_HEALTH   EQU 50
+MOMENTUM_THIEF_HEALTH EQU 100
+ENTROPY_LEECH_HEALTH  EQU 100
+FORCE_INVERTER_HEALTH EQU 150
+
+PLAYER_ACTION   EQU $4070
+SKIP_BOSS_TURN  EQU $4063
+
+BOSS1_DEAD      EQU $4020
+BOSS2_DEAD      EQU $4021
+BOSS3_DEAD      EQU $4022
+BOSS4_DEAD      EQU $4023
 
 *-------------------------------------------------------
 *VALIDATION VALUES TO BE USED, MODIFY AS NEEDED
@@ -245,31 +262,11 @@ ENDL:
 *-------------------------------------------------------
 
 CRLF:           DC.B    $0D,$0A,0
-WELCOME_MSG:    DC.B    '************************************************************'
-                DC.B    $0D,$0A
-                DC.B    'WELCOME TO THE MINIATURE KINGDOM! '
-                DC.B    $0D,$0A
-                DC.B    'CHOOSE YOUR ADVENTURER:'
-                DC.B    $0D,$0A
-                DC.B    '1. MINI KNIGHT (TINY BUT BRAVE)'
-                DC.B    $0D,$0A
-                DC.B    '2. TINY EXPLORER (FAST AND CLEVER)'
-                DC.B    $0D,$0A
-                DC.B    '************************************************************'
-                DC.B    $0D,$0A,0
-POTIONS_MSG:    DC.B    'COLLECT SMALL POTIONS TO SHRINK! ENTER QUANTITY: ',0
-WEAPONS_MSG:    DC.B    'EQUIP TINY WEAPONS: NEEDLE SWORD, ACORN SHIELD.',0
-GAMEPLAY_MSG:   DC.B    'TINY ADVENTURE BEGINS!',0
-UPDATE_MSG:     DC.B    'UPDATING QUEST STATUS...',0
-DRAW_MSG:       DC.B    'REDRAWING MINIATURE WORLD...',0
-HIT_MSG:        DC.B    'OH NO! STEPPED ON BY A GIANT!',0
-MISS_MSG:       DC.B    'SAFE! HID UNDER A LEAF.',0
-LOOP_MSG:       DC.B    '.',0
-REPLAY_MSG:     DC.B    'ENTER 0 TO QUIT, ANY OTHER NUMBER TO REPLAY: ',0
-CONTINUE_MSG:   DC.B    'PRESS ANYKEY TO CONTINUE: ',0
-HUD_MSG:        DC.B    'BRAVERY POINTS: ',0
-HEALTH:         DS.W    1   ;PLAYERS HEALTH
-SCORE:          DS.W    1   ;RESERVE SPACE FOR SCORE
+
+
+
+
+
 
     END START
 
@@ -282,4 +279,5 @@ SCORE:          DS.W    1   ;RESERVE SPACE FOR SCORE
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
+
 
