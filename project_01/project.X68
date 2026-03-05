@@ -3,7 +3,7 @@
 * Student Name:  Kamil Salih
 * Student ID:    C00307549
 * Date:          05/03/2026
-* Description:   
+* Description:   You’re a mercenary infiltrating a mysterious facility, battling physics-defying bosses to collect four artifacts and escape—or face death.
 *-----------------------------------------------------------
 
     ORG $1000
@@ -902,3 +902,4 @@ WELCOME_MSG:
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
+
