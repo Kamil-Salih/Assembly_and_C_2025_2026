@@ -277,31 +277,31 @@ ALL_BOSSES_DEFEATED:
 * GAMELOOP
 *-------------------------------------------------------
 GAMELOOP:
-    MOVE.B $4061, D0
-    CMP.B #0, D0
-    BEQ NO_BOSS_PROMPT
+    MOVE.B $4061, D0            ; Load current boss selection into D0
+    CMP.B #0, D0                ; Check if no boss is currently selected
+    BEQ NO_BOSS_PROMPT          ; If 0, branch to prompt player to select a boss
 
-    LEA INPUT_MSG, A1
+    LEA INPUT_MSG, A1            ; Load address of gameplay input prompt message
     MOVE.W #13, D0
     TRAP #15
 
-    BSR GAMEPLAY
-    BSR APPLY_BOSS_MECH    
-
-    MOVE.B $4061, D0
-    CMP.B #0, D0
-    BEQ RTS_GAMELOOP_SKIP
+    BSR GAMEPLAY                  ; Call subroutine that handles player gameplay action
+    BSR APPLY_BOSS_MECH           ; Apply the current boss's special mechanics
+        
+    MOVE.B $4061, D0              ; Reload boss selection to check if boss was cleared/defeated
+    CMP.B #0, D0                  ; Check if boss value is now 0
+    BEQ RTS_GAMELOOP_SKIP         ; If so, skip and return
 
     BSR UPDATE
-    BSR STATS
+    BSR STATS                     ; Display updated player/boss statistics
     RTS
 
 NO_BOSS_PROMPT:
-    BSR SELECT_BOSS
-    RTS
+    BSR SELECT_BOSS                ; No boss selected, so prompt the player to choose one
+    RTS                            ; Return after boss selection
 
 RTS_GAMELOOP_SKIP:
-    RTS
+    RTS                            ; Return without running update/stats
 
 *-------------------------------------------------------
 * UPDATE (weather)
@@ -903,5 +903,6 @@ WELCOME_MSG:
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
+
 
 
