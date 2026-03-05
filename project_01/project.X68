@@ -662,63 +662,185 @@ GP_RETURN:
     RTS
 
 *-------------------------------------------------------
-*------------------SCREEN DECORATION--------------------
+* BOSS TURN LOGIC
 *-------------------------------------------------------
-DECORATE:
-    MOVE.B  #60, D3         ;LOOP COUNTER D3=60
-    BSR     ENDL            ;BRANCH TO ENDL SUBROUTINE
-OUT:
-    LEA     LOOP_MSG,A1     ;ASSIGN MESSAGE TO ADDRESS REGISTER A1
-    MOVE.B  #14,D0          ;MOVE LITERAL 14 TO DO
-    TRAP    #15             ;TRAP AND INTERPRET VALUE IN D0
-    SUB     #1,D3           ;DECREMENT LOOP COUNTER
-    BNE     OUT             ;REPEAT UNTIL D0=0
-    BSR     ENDL            ;BRANCH TO ENDL SUBROUTINE
-    RTS                     ;RETURN FROM DECORATE: SUBROUTINE
-    
-CLEAR_SCREEN: 
-    MOVE.B  #11,D0          ;CLEAR SCREEN
-    MOVE.W  #$FF00,D1       ;SET COLOUR
-    TRAP    #15             ;TRAP AND INTERPRET VALUE IN D0
-    RTS                     ;RETURN FROM CLEAR_SCREEN: SUBROUTINE                
+APPLY_BOSS_MECH:
+    MOVE.B $4001, $4064     ; Save energy for Entropy check
+
+    MOVE.B SKIP_BOSS_TURN, D7
+    CMP.B #0, D7
+    BEQ CONT_BOSS_CHECK
+    SUB.B #1, D7
+    MOVE.B D7, SKIP_BOSS_TURN
+    BRA BOSS_END
+
+CONT_BOSS_CHECK:
+    MOVE.B $4061, D0
+    CMP.B #1, D0
+    BEQ BOSS_GC
+    CMP.B #2, D0
+    BEQ BOSS_MT
+    CMP.B #3, D0
+    BEQ BOSS_EL
+    CMP.B #4, D0
+    BEQ BOSS_FI
+    BRA BOSS_END
+
+BOSS_GC:
+    MOVE.W $4010, D1
+    CMP.W #0, D1
+    BNE GC_ACT
+    MOVE.B BOSS1_DEAD, D2
+    CMP.B #1, D2
+    BEQ BOSS_END
+    MOVE.B #1, BOSS1_DEAD
+    MOVE.B $4003, D0
+    ADD.B #1, D0
+    MOVE.B D0, $4003
+    LEA BOSS1_DEFEAT_MSG, A1
+    BSR DEFEAT_RESTORE
+    BRA BOSS_END
+GC_ACT:
+    MOVE.B $4000, D0
+    SUB.B #20, D0
+    BRA BOSS_DMG_LIMIT
+
+BOSS_MT:
+    MOVE.W $4012, D1
+    CMP.W #0, D1
+    BNE MT_ACT
+    MOVE.B BOSS2_DEAD, D3
+    CMP.B #1, D3
+    BEQ BOSS_END
+    MOVE.B #1, BOSS2_DEAD
+    MOVE.B $4003, D3
+    ADD.B #1, D3
+    MOVE.B D3, $4003
+    LEA BOSS2_DEFEAT_MSG, A1
+    BSR DEFEAT_RESTORE
+    BRA BOSS_END
+MT_ACT:
+    CLR.W D0
+    MOVE.W $4008, D0
+    ADD.W #2, D0
+    MOVE.B $4000, D1
+    SUB.B D0, D1
+    MOVE.B D1, $4000
+    CLR.W $4008
+    CLR.L D0
+    MOVE.B $4062, D0
+    MOVE.W D0, $4008
+    BRA BOSS_END
+
+BOSS_EL:
+    MOVE.W $4014, D1
+    CMP.W #0, D1
+    BNE EL_ACT
+    MOVE.B BOSS3_DEAD, D2
+    CMP.B #1, D2
+    BEQ BOSS_END
+    MOVE.B #1, BOSS3_DEAD
+    MOVE.B $4003, D2
+    ADD.B #1, D2
+    MOVE.B D2, $4003
+    LEA BOSS3_DEFEAT_MSG, A1
+    BSR DEFEAT_RESTORE
+    BRA BOSS_END
+EL_ACT:
+    MOVE.B $4064, D2        
+    MOVE.B $4001, D0        
+    SUB.B #10, D0
+    CMP.B #0, D0
+    BGE OK_EL
+    MOVE.B #0, D0
+OK_EL:
+    MOVE.B D0, $4001
+    CMP.B #0, D2            
+    BEQ SKIP_EL_HEAL
+    CMP.B #0, D0            
+    BNE SKIP_EL_HEAL
+    MOVE.W $4014, D0
+    ADD.W #10, D0
+    MOVE.W D0, $4014
+SKIP_EL_HEAL:
+    MOVE.B $4000, D3
+    SUB.B #5, D3
+    MOVE.B D3, $4000
+    BRA BOSS_END
+
+BOSS_FI:
+    MOVE.W $4016, D1
+    CMP.W #0, D1
+    BNE FI_ACT
+    MOVE.B BOSS4_DEAD, D2
+    CMP.B #1, D2
+    BEQ BOSS_END
+    MOVE.B #1, BOSS4_DEAD
+    MOVE.B $4003, D2
+    ADD.B #1, D2
+    MOVE.B D2, $4003
+    LEA BOSS4_DEFEAT_MSG, A1
+    BSR DEFEAT_RESTORE
+    BRA BOSS_END
+FI_ACT:
+    MOVE.B $4000, D2
+    SUB.B #5, D2            ; Force deals flat 5 damage
+    MOVE.B D2, $4000
+    BRA BOSS_END
+
+BOSS_DMG_LIMIT:
+    CMP.B #0, D0
+    BGE OK_LIMIT
+    MOVE.B #0, D0
+OK_LIMIT:
+    MOVE.B D0, $4000
+    BRA BOSS_END
+
+DEFEAT_RESTORE:
+    MOVE.W #13, D0
+    TRAP #15
+    MOVE.B #MAX_HEALTH, $4000
+    LEA HEALED_MSG, A1
+    MOVE.W #13, D0
+    TRAP #15
+    MOVE.B #MAX_ENERGY, $4001
+    LEA ENERGY_REPLENISHED_MSG, A1
+    MOVE.W #13, D0
+    TRAP #15
+    MOVE.B #0, $4061
+    CLR.W $4008
+    MOVE.B #0, SKIP_BOSS_TURN
+    BSR SELECT_BOSS
+    RTS
+
+BOSS_END:
+    MOVE.B $4000, D0
+    CMP.B #0, D0
+    BGT BOSS_RET
+    LEA MISSION_FAILED_MSG, A1
+    MOVE.W #13, D0
+    TRAP #15
+    SIMHALT
+BOSS_RET:
+    RTS            
 
 *-------------------------------------------------------
-*------------------------REPLAY-------------------------
-*-------------------------------------------------------
-REPLAY:
-    BSR     ENDL            ;BRANCH TO ENDL SUBROUTINE
-    LEA     REPLAY_MSG,A1   ;ASSIGN MESSAGE TO ADDRESS REGISTER A1
-    MOVE.B  #14,D0          ;MOVE LITERAL 14 TO DO
-    TRAP    #15             ;TRAP AND INTERPRET VALUE IN D0
-    
-    MOVE.B  #4,D0           ;MOVE LITERAL 4 TO DO
-    TRAP    #15             ;TRAP AND INTERPRET VALUE IN D0
-
-    CMP     #EXIT,D1        ;COMPARE D1 TO EXIT
-    BEQ     END             ;IF EQUAL, BRANCH TO END
-    BSR     GAMELOOP        ;BRANCH TO GAMELOOP SUBROUTINE
-    
-*-------------------------------------------------------
-*------------------------CONTINUE-------------------------
+* UTILITIES
 *-------------------------------------------------------
 CONTINUE:
-    BSR     ENDL            ;BRANCH TO ENDL SUBROUTINE
-    LEA     CONTINUE_MSG,A1 ;ASSIGN MESSAGE TO ADDRESS REGISTER A1
-    MOVE.B  #14,D0          ;MOVE LITERAL 14 TO DO
-    TRAP    #15             ;TRAP AND INTERPRET VALUE IN D0
-    
-    MOVE.B  #4,D0           ;MOVE LITERAL 4 TO DO
-    TRAP    #15             ;TRAP AND INTERPRET VALUE IN D0
-    RTS                     ;RETURN FROM SUBROUTINE 
+    LEA CONTINUE_MSG, A1
+    MOVE.W #13, D0
+    TRAP #15
+    MOVE.W #5, D0
+    TRAP #15
+    RTS
 
 ENDL:
-    MOVEM.L D0/A1,-(A7)     ;SAVE D0 AND A1
-    MOVE    #14,D0          ;MOVE LITERAL 14 TO DO
-    LEA     CRLF,A1         ;ASSIGN CRLF TO ADDRESS REGISTER A1
-    TRAP    #15             ;TRAP AND INTERPRET VALUE IN D0
-    MOVEM.L (A7)+,D0/A1     ;RESTORE D0 AND A1
-    RTS                     ;RETURN FROM ENDL: SUBROUTINE
-    
+    LEA CRLF, A1
+    MOVE.W #13, D0
+    TRAP #15
+    RTS
+
 *-------------------------------------------------------
 * DATA SECTION
 *-------------------------------------------------------
@@ -783,8 +905,4 @@ WELCOME_MSG:
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
-
-
-
-
 
