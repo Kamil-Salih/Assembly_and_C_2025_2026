@@ -354,39 +354,179 @@ WEATHER_FOG:
 WEATHER_EVENT_SKIP:
     RTS
 
-
 *-------------------------------------------------------
-*---GAME PLAY (QUEST PROGRESS)--------------------------
-*------------------------------------------------------- 
+* STATS
+*-------------------------------------------------------
+STATS:
+    LEA PLAYER_STATS_HDR, A1
+    MOVE.W #13, D0
+    TRAP #15
+
+    LEA PLAYER_HEALTH_MSG, A1
+    MOVE.W #14, D0        
+    TRAP #15
+    CLR.L D1
+    MOVE.B $4000, D1
+    MOVE.W #3, D0         
+    TRAP #15
+    BSR ENDL              
+
+    LEA ENERGY_MSG, A1
+    MOVE.W #14, D0
+    TRAP #15
+    CLR.L D1
+    MOVE.B $4001, D1
+    MOVE.W #3, D0
+    TRAP #15
+    BSR ENDL
+
+    LEA AMMO_MSG, A1
+    MOVE.W #14, D0
+    TRAP #15
+    CLR.L D1
+    MOVE.B $4002, D1
+    MOVE.W #3, D0
+    TRAP #15
+    BSR ENDL
+
+    LEA ARTIFACTS_MSG, A1
+    MOVE.W #14, D0
+    TRAP #15
+    CLR.L D1
+    MOVE.B $4003, D1
+    MOVE.W #3, D0
+    TRAP #15
+    BSR ENDL
+
+    MOVE.B $4061, D0
+    CMP.B #0, D0
+    BEQ ST_WEATHER_LABEL    
+
+    LEA BOSS_HP_LABEL_MSG, A1
+    MOVE.W #14, D0
+    TRAP #15
+
+    MOVE.B $4061, D2
+    CMP.B #1, D2
+    BEQ ST_BOSS1_HP
+    CMP.B #2, D2
+    BEQ ST_BOSS2_HP
+    CMP.B #3, D2
+    BEQ ST_BOSS3_HP
+    CMP.B #4, D2
+    BEQ ST_BOSS4_HP
+    BRA ST_BOSS_HP_DONE
+
+ST_BOSS1_HP:
+    CLR.L D1
+    MOVE.W $4010, D1
+    MOVE.W #3, D0
+    TRAP #15
+    BRA ST_BOSS_HP_DONE
+
+ST_BOSS2_HP:
+    CLR.L D1
+    MOVE.W $4012, D1
+    MOVE.W #3, D0
+    TRAP #15
+    BRA ST_BOSS_HP_DONE
+
+ST_BOSS3_HP:
+    CLR.L D1
+    MOVE.W $4014, D1
+    MOVE.W #3, D0
+    TRAP #15
+    BRA ST_BOSS_HP_DONE
+
+ST_BOSS4_HP:
+    CLR.L D1
+    MOVE.W $4016, D1        
+    MOVE.W #3, D0
+    TRAP #15
+    BRA ST_BOSS_HP_DONE
+
+ST_BOSS_HP_DONE:
+    BSR ENDL
+
+ST_WEATHER_LABEL:
+    LEA WEATHER_LABEL_MSG, A1
+    MOVE.W #14, D0
+    TRAP #15
+
+    MOVE.B $4006, D0
+    CMP.B #0, D0
+    BEQ ST_WEATHER_RAIN
+    CMP.B #1, D0
+    BEQ ST_WEATHER_SUN
+    CMP.B #2, D0
+    BEQ ST_WEATHER_FOG
+    BRA ST_WEATHER_UNKNOWN
+
+ST_WEATHER_RAIN:
+    LEA WEATHER_RAIN_MSG, A1
+    MOVE.W #13, D0
+    TRAP #15
+    RTS
+
+ST_WEATHER_SUN:
+    LEA WEATHER_SUN_MSG, A1
+    MOVE.W #13, D0
+    TRAP #15
+    RTS
+
+ST_WEATHER_FOG:
+    LEA WEATHER_FOG_MSG, A1
+    MOVE.W #13, D0
+    TRAP #15
+    RTS
+
+ST_WEATHER_UNKNOWN:
+    LEA WEATHER_UNKNOWN_MSG, A1
+    MOVE.W #13, D0
+    TRAP #15
+    RTS
+          
+*-------------------------------------------------------
+* GAMEPLAY
+*-------------------------------------------------------
 GAMEPLAY:
-    BSR     ENDL            ;BRANCH TO ENDL SUBROUTINE
-    BSR     DECORATE        ;BRANCH TO DECORATE SUBROUTINE
-    LEA     GAMEPLAY_MSG,A1 ;ASSIGN MESSAGE TO ADDRESS REGISTER A1
-    MOVE.B  #14,D0          ;MOVE LITERAL 14 TO DO
-    TRAP    #15             ;TRAP AND INTERPRET VALUE IN D0
-    MOVE.B  #4,D0           ;MOVE LITERAL 4 TO DO               
-    TRAP    #15             ;TRAP AND INTERPRET VALUE IN D0
-    BSR     DECORATE        ;BRANCH TO DECORATE SUBROUTINE
-    BSR     COLLISION       ;BRANCH TO COLLISION SUBROUTINE
-    RTS                     ;RETURN FROM GAMEPLAY: SUBROUTINE
+    CLR.B PLAYER_ACTION
+
+PLAYER_INPUT_LOOP:
+    CLR.B INPUT_BUFFER
+    MOVE.W #2, D0
+    LEA INPUT_BUFFER, A1
+    TRAP #15
+
+    MOVE.B (INPUT_BUFFER), D1
+    SUB.B #'0', D1
+
+    CMP.B #1, D1
+    BLT INVALID_ACTION
+    CMP.B #3, D1
+    BGT INVALID_ACTION
+
+    MOVE.B D1, PLAYER_ACTION
+    BRA PLAYER_ACTION_CHECK
+
+INVALID_ACTION:
+    LEA INVALID_ACTION_MSG, A1
+    MOVE.W #13, D0
+    TRAP #15
+    BRA PLAYER_INPUT_LOOP
+
+PLAYER_ACTION_CHECK:
+    CMP.B #1, PLAYER_ACTION
+    BEQ PLAYER_ATTACK
+    CMP.B #2, PLAYER_ACTION
+    BEQ PLAYER_RIFLE
+    CMP.B #3, PLAYER_ACTION
+    BEQ PLAYER_FLEE
+    BRA GP_RETURN
+
 
 *-------------------------------------------------------
-*-----------------HEADS UP DISPLAY (SCORE)--------------
-*-------------------------------------------------------   
-HUD:
-    BSR     ENDL            ;BRANCH TO ENDL SUBROUTINE
-    BSR     DECORATE        ;BRANCH TO DECORATE SUBROUTINE
-    LEA     HUD_MSG,A1      ;ASSIGN MESSAGE TO ADDRESS REGISTER A1
-    MOVE.B  #14,D0          ;MOVE LITERAL 14 TO DO
-    TRAP    #15             ;TRAP AND INTERPRET VALUE IN D0
-    MOVE.B  (A3),D1         ;RETRIEVE THE VALUE A3 POINT TO AND MOVE TO D1
-    MOVE.B  #3,D0           ;MOVE LITERAL 3 TO DO    
-    TRAP    #15               
-    BSR     DECORATE        ;BRANCH TO DECORATE SUBROUTINE    
-    RTS                     
-
-*-------------------------------------------------------
-*-----------------------BEING ATTACKED------------------
+*-----------------------PLAYER ATTACK-------------------
 * THIS COULD BE USED FOR COLLISION DETECTION
 *-------------------------------------------------------
 COLLISION:                  
@@ -541,6 +681,7 @@ WELCOME_MSG:
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
+
 
 
 
