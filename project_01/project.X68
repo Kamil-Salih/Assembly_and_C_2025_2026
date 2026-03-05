@@ -3,11 +3,11 @@
 * Student Name:  Kamil Salih
 * Student ID:    C00307549
 * Date:          05/03/2026 
-* Description:   You’re a mercenary infiltrating a mysterious facility, battling physics-defying bosses to collect four artifacts and escape—or face endless challenges.
+* Description:   Youâ€™re a mercenary infiltrating a mysterious facility, battling physics-defying bosses to collect four artifacts and escapeâ€”or face death.
 * Known Bugs:    None
 *-----------------------------------------------------------
 *-------------------------------------------------------
-* STARTING MEMORY ADDRESS FOR THE PROGRAMME $1000
+* STARTING MEMORY ADDRESS FOR THE PROGRAM $1000
 *-------------------------------------------------------
 	ORG $1000
 *-------------------------------------------------------
@@ -117,32 +117,6 @@ DRAW:
     TRAP    #15             ;TRAP AND INTERPRET VALUE IN D0
     BSR     DECORATE        ;BRANCH TO DECORATE SUBROUTINE
     RTS                     ;RETURN FROM DRAW: SUBROUTINE
-
-*-------------------------------------------------------
-*--------------------POTIONS INVENTORY---------------------
-* NUMBER OF POTIONS TO BE USED IN A QUEST 
-*------------------------------------------------------- 
-POTIONS:
-    BSR     ENDL            ;BRANCH TO ENDL SUBROUTINE
-    BSR     DECORATE        ;BRANCH TO DECORATE SUBROUTINE
-    LEA     POTIONS_MSG,A1  ;ASSIGN MESSAGE TO ADDRESS REGISTER A1
-    MOVE.B  #14,D0          ;MOVE LITERAL 14 TO DO
-    TRAP    #15             ;TRAP AND INTERPRET VALUE IN D0
-    BSR     DECORATE        ;BRANCH TO DECORATE SUBROUTINE
-    RTS                     ;RETURN FROM POTIONS: SUBROUTINE
-
-*-------------------------------------------------------
-*-------------------------WEAPONS-----------------------
-* NUMBER OF WEAPONS
-*-------------------------------------------------------   
-WEAPONS:
-    BSR     ENDL            ;BRANCH TO ENDL SUBROUTINE
-    BSR     DECORATE        ;BRANCH TO DECORATE SUBROUTINE
-    LEA     WEAPONS_MSG,A1  ;ASSIGN MESSAGE TO ADDRESS REGISTER A1      
-    MOVE.B  #14,D0          ;MOVE LITERAL 14 TO DO
-    TRAP    #15             ;TRAP AND INTERPRET VALUE IN D0
-    BSR     DECORATE        ;BRANCH TO DECORATE SUBROUTINE
-    RTS                     ;RETURN FROM WEAPONS: SUBROUTINE
 
 *-------------------------------------------------------
 *---GAME PLAY (QUEST PROGRESS)--------------------------
@@ -308,3 +282,4 @@ SCORE:          DS.W    1   ;RESERVE SPACE FOR SCORE
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
+
