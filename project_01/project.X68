@@ -156,34 +156,122 @@ SB_NEED_SELECT:
     RTS
 
 *-------------------------------------------------------
-*----------------GAMELOOP (MAIN LOOP)-------------------
-*------------------------------------------------------- 
-GAMELOOP:
-    BSR     INPUT           ;BRANCH TO INPUT SUBROUTINE
-    BSR     UPDATE          ;BRANCH TO UPDATE GAME SUBROUTINE 
-    ;BSR     CLEAR_SCREEN    ;CLEARS THE SCREEN 
-    BSR     DRAW            ;BRANCH TO DRAW GAME SUBROUTINE               
-    ;BSR     CLEAR_SCREEN    ;CLEARS THE SCREEN 
-    BSR     GAMEPLAY        ;BRANCH TO GAMEPLAY SUBROUTINE
-    ;BSR     CLEAR_SCREEN    ;CLEARS THE SCREEN        
-    BSR     HUD             ;BRANCH TO HUD SUBROUTINE
-    ;BSR     CLEAR_SCREEN    ;CLEARS THE SCREEN
-    BSR     REPLAY          ;BRANCH TO REPLAY SUBROUTINE 
-    BSR     CLEAR_SCREEN    ;CLEARS THE SCREEN
-    RTS                     ;RETURN FROM GAMELOOP: SUBROUTINE       
+* BOSS INPUT LOOP
+*-------------------------------------------------------
+BOSS_INPUT_LOOP:
+    CLR.B INPUT_BUFFER
+    MOVE.W #2, D0
+    LEA INPUT_BUFFER, A1
+    TRAP #15
+
+    MOVE.B (INPUT_BUFFER), D1
+    SUB.B #'0', D1
+
+    CMP.B #1, D1
+    BLT INVALID_BOSS_INPUT
+    CMP.B #4, D1
+    BGT INVALID_BOSS_INPUT
+
+    CMP.B #1, D1
+    BEQ CHK_B1
+    CMP.B #2, D1
+    BEQ CHK_B2
+    CMP.B #3, D1
+    BEQ CHK_B3
+    CMP.B #4, D1
+    BEQ CHK_B4
+
+CHK_B1:
+    MOVE.B BOSS1_DEAD, D2
+    CMP.B #1, D2
+    BEQ BOSS_ALREADY_DEAD
+    BRA BOSS_OK
+
+CHK_B2:
+    MOVE.B BOSS2_DEAD, D2
+    CMP.B #1, D2
+    BEQ BOSS_ALREADY_DEAD
+    BRA BOSS_OK
+
+CHK_B3:
+    MOVE.B BOSS3_DEAD, D2
+    CMP.B #1, D2
+    BEQ BOSS_ALREADY_DEAD
+    BRA BOSS_OK
+
+CHK_B4:
+    MOVE.B BOSS4_DEAD, D2
+    CMP.B #1, D2
+    BEQ BOSS_ALREADY_DEAD
+    BRA BOSS_OK
+
+BOSS_ALREADY_DEAD:
+    LEA BOSS_DEAD_MSG, A1
+    MOVE.W #13, D0
+    TRAP #15
+    BRA BOSS_INPUT_LOOP
+
+BOSS_OK:
+    MOVE.B D1, $4061
+    RTS
+
+INVALID_BOSS_INPUT:
+    LEA INVALID_BOSS_MSG, A1
+    MOVE.W #13, D0
+    TRAP #15
+    BRA BOSS_INPUT_LOOP
 
 *-------------------------------------------------------
-*----------------UPDATE QUEST PROGRESS------------------
-*  COMPLETE QUEST
-*------------------------------------------------------- 
-UPDATE:
-    BSR     ENDL            ;BRANCH TO ENDL SUBROUTINE
-    BSR     DECORATE        ;BRANCH TO DECORATE SUBROUTINE   
-    LEA     UPDATE_MSG,A1   ;ASSIGN MESSAGE TO ADDRESS REGISTER A1 
-    MOVE.B  #14,D0          ;MOVE LITERAL 14 TO DO
-    TRAP    #15             ;TRAP AND INTERPRET VALUE IN D0
-    BSR     DECORATE        ;BRANCH TO DECORATE SUBROUTINE
-    RTS                     
+* SELECT BOSS
+*-------------------------------------------------------
+SELECT_BOSS:
+    BSR CHECK_WIN
+    CMP.B #1, D0
+    BEQ ALL_BOSSES_DEFEATED
+
+    LEA BOSS_SELECT_MSG, A1
+    MOVE.W #13, D0
+    TRAP #15
+
+    BSR BOSS_INPUT_LOOP
+
+    MOVE.B $4061, D0
+    CMP.B #1, D0
+    BEQ SHOW_BOSS1
+    CMP.B #2, D0
+    BEQ SHOW_BOSS2
+    CMP.B #3, D0
+    BEQ SHOW_BOSS3
+    CMP.B #4, D0
+    BEQ SHOW_BOSS4
+    RTS
+
+SHOW_BOSS1:
+    LEA BOSS1_MSG, A1
+    BRA SHOW_BOSS_MSG
+SHOW_BOSS2:
+    LEA BOSS2_MSG, A1
+    BRA SHOW_BOSS_MSG
+SHOW_BOSS3:
+    LEA BOSS3_MSG, A1
+    BRA SHOW_BOSS_MSG
+SHOW_BOSS4:
+    LEA BOSS4_MSG, A1
+
+SHOW_BOSS_MSG:
+    MOVE.W #13, D0
+    TRAP #15
+
+    CLR.W   $4008          
+    MOVE.B  #0, $4062
+    MOVE.B  #0, SKIP_BOSS_TURN
+    RTS
+
+ALL_BOSSES_DEFEATED:
+    LEA ALL_BOSSES_MSG, A1
+    MOVE.W #13, D0
+    TRAP #15
+    BRA END_GAME
 
 *-------------------------------------------------------
 *-----------------DRAW QUEST UPDATES--------------------
@@ -385,4 +473,5 @@ WELCOME_MSG:
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
+
 
