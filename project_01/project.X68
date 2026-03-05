@@ -2,12 +2,11 @@
 * Project Title: Alternative Physics: Facility Infiltration
 * Student Name:  Kamil Salih
 * Student ID:    C00307549
-* Date:          05/03/2026 
-* Description:   You’re a mercenary infiltrating a mysterious facility, battling physics-defying bosses to collect four artifacts and escape—or face death.
-* Known Bugs:    None
+* Date:          05/03/2026
+* Description:   
 *-----------------------------------------------------------
 
-	ORG $1000	;STARTING MEMORY ADDRESS FOR THE PROGRAM $1000
+    ORG $1000
 
 *-------------------------------------------------------
 * CONSTANTS
@@ -485,7 +484,8 @@ ST_WEATHER_UNKNOWN:
     MOVE.W #13, D0
     TRAP #15
     RTS
-          
+
+
 *-------------------------------------------------------
 * GAMEPLAY
 *-------------------------------------------------------
@@ -524,7 +524,6 @@ PLAYER_ACTION_CHECK:
     BEQ PLAYER_FLEE
     BRA GP_RETURN
 
-
 *-------------------------------------------------------
 * PLAYER ATTACK
 *-------------------------------------------------------
@@ -548,8 +547,6 @@ ATTACK_EL: MOVE.W $4014, D0
     BRA APPLY_ATTACK
 ATTACK_FI: MOVE.W $4016, D0
     BRA APPLY_ATTACK
-
-OUTINE
 
 *-------------------------------------------------------
 * APPLY_ATTACK
@@ -822,7 +819,7 @@ BOSS_END:
     TRAP #15
     SIMHALT
 BOSS_RET:
-    RTS            
+    RTS
 
 *-------------------------------------------------------
 * UTILITIES
@@ -905,4 +902,3 @@ WELCOME_MSG:
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
-
