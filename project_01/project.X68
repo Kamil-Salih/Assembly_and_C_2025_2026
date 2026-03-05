@@ -52,13 +52,13 @@ RESET_GAME:
     MOVE.B  #0, SKIP_BOSS_TURN      ; rifle skip counter
     MOVE.B  #0, $4064               ; temp: previous energy at start of boss phase
 
-    ; Boss HP (words)
-    MOVE.W  #GLASS_CANNON_HEALTH,   $4010
+    ; Boss HP (words). Here, we initialise each boss's health. MOVE.W is used in case the game is ever expanded to be more complex (more moves, healing, longer battles, etc)
+    MOVE.W  #GLASS_CANNON_HEALTH,   $4010    
     MOVE.W  #MOMENTUM_THIEF_HEALTH, $4012
     MOVE.W  #ENTROPY_LEECH_HEALTH,  $4014
     MOVE.W  #FORCE_INVERTER_HEALTH, $4016
 
-    ; Boss defeated flags
+    ; Boss defeated flags, they are cleared for each boss
     MOVE.B  #0, BOSS1_DEAD
     MOVE.B  #0, BOSS2_DEAD
     MOVE.B  #0, BOSS3_DEAD
@@ -68,53 +68,53 @@ RESET_GAME:
 *-------------------------------------------------------
 * START
 *-------------------------------------------------------
-START:
-    BSR RESET_GAME
-    BSR WELCOME
+START:              
+    BSR RESET_GAME    ; Branch to subroutine to reset all game variables/state
+    BSR WELCOME        ; Branch to subroutine that displays the welcome message
 
     ; print "You approach the facility..." once
-    LEA GAMEPLAY_MSG, A1
-    MOVE.W #13, D0
-    TRAP #15
-    BSR CONTINUE
+    LEA GAMEPLAY_MSG, A1    ; Load effective address of GAMEPLAY_MSG string into address register A1
+    MOVE.W #13, D0          ; Load trap task code 13 (print string) into D0
+    TRAP #15                ; Call system trap to print the string pointed to by A1
+    BSR CONTINUE            ; Branch to subroutine that waits for player to continue
 
-    BSR SELECT_BOSS_IF_NONE
-    BSR GAME
-    SIMHALT
-    RTS
+    BSR SELECT_BOSS_IF_NONE    ; Ensure the player selects a boss if the player is not fighting one
+    BSR GAME                   ; Branch to the main game loop/subroutine
+    SIMHALT                    ; Stop the simulator when the game ends
+    RTS                        ; Return from subroutine (safety return if reached just in case)
 
 *-------------------------------------------------------
 * CHECK WIN
 *-------------------------------------------------------
 CHECK_WIN:
-    MOVE.B $4003, D0
-    CMP.B #NUM_ARTIFACTS, D0
-    BEQ WIN_TRUE
-    MOVE.B #0, D0
-    RTS
+    MOVE.B $4003, D0            ; Load the number of collected artifacts (stored at $4003) into D0
+    CMP.B #NUM_ARTIFACTS, D0    ; Compare collected artifacts with the total required (NUM_ARTIFACTS)
+    BEQ WIN_TRUE                ; If equal, branch to WIN_TRUE (player has collected all artifacts)
+    MOVE.B #0, D0               ; Otherwise set D0 to 0 (win condition not met)
+    RTS                         ; Return from subroutine
 
 WIN_TRUE:
-    MOVE.B #1, D0
-    RTS
+    MOVE.B #1, D0                ; Set D0 to 1 to indicate the win condition is true
+    RTS                          ; Return from subroutine
 
 *-------------------------------------------------------
 * GAME
 *-------------------------------------------------------
 GAME:
 MAIN_LOOP:
-    BSR CHECK_WIN
-    CMP.B #1, D0
-    BEQ END_GAME
+    BSR CHECK_WIN    ; Call subroutine to check if the player has won
+    CMP.B #1, D0     ; Compares the result in D0 with 1 (win condition true)
+    BEQ END_GAME     ; If it is equal, branch to END_GAME
 
-    BSR GAMELOOP
-    BRA MAIN_LOOP
+    BSR GAMELOOP     ; Otherwise, execute one iteration of the main game loop
+    BRA MAIN_LOOP    ; The loop is repeated indefinitely until the win condition is met
 
 END_GAME:
-    LEA WIN_MSG, A1
-    MOVE.W #13, D0
-    TRAP #15
-    SIMHALT
-    RTS
+    LEA WIN_MSG, A1    ; Load address of the win message string into A1
+    MOVE.W #13, D0     ; Load trap code 13 (prints the string contained in WIN_MSG)
+    TRAP #15           ; The system call to print the win message
+    SIMHALT            ; Halts the simulator (game is finished)
+    RTS                ; Return from subroutine (safety return just in case)
 
 *-------------------------------------------------------
 * WELCOME (only at start)
@@ -902,5 +902,6 @@ WELCOME_MSG:
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
+
 
 
