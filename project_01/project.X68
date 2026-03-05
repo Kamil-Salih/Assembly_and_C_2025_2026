@@ -85,37 +85,36 @@ START:
     RTS
 
 *-------------------------------------------------------
-*-------------------GAME SUBROUTINE---------------------
+* CHECK WIN
+*-------------------------------------------------------
+CHECK_WIN:
+    MOVE.B $4003, D0
+    CMP.B #NUM_ARTIFACTS, D0
+    BEQ WIN_TRUE
+    MOVE.B #0, D0
+    RTS
+
+WIN_TRUE:
+    MOVE.B #1, D0
+    RTS
+
+*-------------------------------------------------------
+* GAME
 *-------------------------------------------------------
 GAME:
-    BSR     GAMELOOP        ;BRANCH TO GAMELOOP SUBROUTINE
-    RTS                     ;RETURN FROM GAME: SUBROUTINE
-          
-END:
+MAIN_LOOP:
+    BSR CHECK_WIN
+    CMP.B #1, D0
+    BEQ END_GAME
+
+    BSR GAMELOOP
+    BRA MAIN_LOOP
+
+END_GAME:
+    LEA WIN_MSG, A1
+    MOVE.W #13, D0
+    TRAP #15
     SIMHALT
-
-*-------------------------------------------------------
-*-------------------WELCOME SUBROUTINE------------------
-*-------------------------------------------------------
-WELCOME:
-    BSR     ENDL            ;BRANCH TO ENDL SUBROUTINE
-    LEA     WELCOME_MSG,A1  ;ASSIGN MESSAGE TO ADDRESS REGISTER A1
-    MOVE.B  #14,D0          ;MOVE LITERAL 14 TO DO
-    TRAP    #15             ;TRAP AND INTERPRET VALUE IN D0
-    BSR     ENDL            ;BRANCH TO ENDL SUBROUTINE
-    BSR     CONTINUE        ;BRANCH TO CONTINUE SUBROUTINE 
-    RTS                     ;RETURN FROM WELCOME: SUBROUTINE
-
-*-------------------------------------------------------
-*---------GAMEPLAY INPUT VALUES SUBROUTINE--------------
-*-------------------------------------------------------    
-INPUT:
-    BSR     POTIONS         ;BRANCH TO POTION INPUT SUBROUTINE
-    BSR     ENDL            ;BRANCH TO ENDL SUBROUTINE
-    BSR     CONTINUE        ;BRANCH TO CONTINUE SUBROUTINE
-    BSR     WEAPONS         ;BRANCH TO WEAPONS INPUT SUBROUTINE
-    BSR     ENDL            ;BRANCH TO ENDL SUBROUTINE
-    BSR     CONTINUE        ;BRANCH TO CONTINUE SUBROUTINE
     RTS
 
 *-------------------------------------------------------
@@ -285,15 +284,62 @@ ENDL:
     RTS                     ;RETURN FROM ENDL: SUBROUTINE
     
 *-------------------------------------------------------
-*-------------------DATA DECLARATIONS--------------------
+* DATA SECTION
 *-------------------------------------------------------
+    ORG $3000
 
-CRLF:           DC.B    $0D,$0A,0
+INPUT_BUFFER:   DS.B 16
+CRLF:           DC.B $0D,$0A,0
 
+INPUT_MSG:
+    DC.B 'Choose your action:',$0D,$0A
+    DC.B '1. Attack (10 dmg, -5 Energy)',$0D,$0A
+    DC.B '2. Rifle (skip boss turn, -1 ammo)',$0D,$0A
+    DC.B '3. Flee to elevator',$0D,$0A,0
 
+PLAYER_STATS_HDR: DC.B 'PLAYER STATS:',0
+PLAYER_HEALTH_MSG:      DC.B 'HEALTH: ',0
+ENERGY_MSG:             DC.B 'ENERGY SWORD''S ENERGY: ',0
+AMMO_MSG:               DC.B 'AMMO: ',0
+ARTIFACTS_MSG:          DC.B 'ARTIFACTS: ',0
+BOSS_HP_LABEL_MSG:      DC.B 'BOSS HP: ',0
+WEATHER_LABEL_MSG:      DC.B 'WEATHER: ',0
 
+WEATHER_RAIN_MSG: DC.B 'Rain',$0D,$0A,0
+WEATHER_SUN_MSG:  DC.B 'Sun',$0D,$0A,0
+WEATHER_FOG_MSG:  DC.B 'Fog',$0D,$0A,0
+WEATHER_UNKNOWN_MSG: DC.B 'Unknown',$0D,$0A,0
 
+GAMEPLAY_MSG: DC.B 'You approach the facility...',0
+BOSS_SELECT_MSG: DC.B 'Choose boss to enter: 1=Glass Cannon, 2=Momentum, 3=Entropy, 4=Force',0
+INVALID_BOSS_MSG: DC.B 'Invalid choice! Enter 1-4.',0
+BOSS_DEAD_MSG:    DC.B 'That boss is already defeated. Choose another.',0
+INVALID_ACTION_MSG: DC.B 'Invalid action! Choose 1-3.',0
 
+BOSS1_MSG: DC.B 'Encountered Glass Cannon!',0
+BOSS2_MSG: DC.B 'Encountered Momentum Thief!',0
+BOSS3_MSG: DC.B 'Encountered Entropy Leech!',0
+BOSS4_MSG: DC.B 'Encountered Force Inverter!',0
+
+BOSS1_DEFEAT_MSG: DC.B 'Glass Cannon destroyed! Artifact A acquired.',$0D,$0A,0
+BOSS2_DEFEAT_MSG: DC.B 'Momentum Thief neutralized! Artifact B acquired.',$0D,$0A,0
+BOSS3_DEFEAT_MSG: DC.B 'Entropy Leech defeated! Artifact C acquired.',$0D,$0A,0
+BOSS4_DEFEAT_MSG: DC.B 'Force Inverter down! Artifact D acquired.',$0D,$0A,0
+
+HEALED_MSG: DC.B 'You are fully healed!',$0D,$0A,0
+ENERGY_REPLENISHED_MSG: DC.B 'Energy Sword fully recharged!',$0D,$0A,0
+
+CONTINUE_MSG:   DC.B 'PRESS ANYKEY TO CONTINUE: ',0
+WIN_MSG:            DC.B 'MISSION COMPLETE! EXFIL SUCCESSFUL!',0
+MISSION_FAILED_MSG: DC.B 'MISSION FAILED! YOU DIED.',0
+NO_AMMO_MSG: DC.B 'No ammo left!',0
+ALL_BOSSES_MSG: DC.B 'All bosses defeated.',$0D,$0A,0
+
+WELCOME_MSG:
+    DC.B '************************************************************',$0D,$0A
+    DC.B 'WELCOME TO THE INFILTRATION MISSION!',$0D,$0A
+    DC.B 'Collect 4 artifacts. Survive the physics anomalies.',$0D,$0A
+    DC.B '************************************************************',$0D,$0A,0
 
     END START
 
@@ -301,12 +347,3 @@ CRLF:           DC.B    $0D,$0A,0
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~
-
-
-
-
