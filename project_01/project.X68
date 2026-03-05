@@ -225,30 +225,30 @@ INVALID_BOSS_INPUT:
 * SELECT BOSS
 *-------------------------------------------------------
 SELECT_BOSS:
-    BSR CHECK_WIN
-    CMP.B #1, D0
-    BEQ ALL_BOSSES_DEFEATED
+    BSR CHECK_WIN                ; Call subroutine to check if all bosses/artifacts are completed
+    CMP.B #1, D0                 ; Compare result with 1 (win condition)
+    BEQ ALL_BOSSES_DEFEATED      ; If win condition true, branch to message that all bosses are defeated
 
-    LEA BOSS_SELECT_MSG, A1
-    MOVE.W #13, D0
-    TRAP #15
+    LEA BOSS_SELECT_MSG, A1      ; Load address of boss selection prompt message into A1
+    MOVE.W #13, D0               ; Load trap code 13 (print string)
+    TRAP #15                     ; Display boss selection message
 
-    BSR BOSS_INPUT_LOOP
+    BSR BOSS_INPUT_LOOP          ; Call loop that handles boss input and validation
 
-    MOVE.B $4061, D0
-    CMP.B #1, D0
-    BEQ SHOW_BOSS1
+    MOVE.B $4061, D0             ; Load selected boss number from memory into D0
+    CMP.B #1, D0                 ; Check if boss 1 was selected
+    BEQ SHOW_BOSS1               ; Branch to show boss 1 intro message
     CMP.B #2, D0
     BEQ SHOW_BOSS2
     CMP.B #3, D0
     BEQ SHOW_BOSS3
     CMP.B #4, D0
     BEQ SHOW_BOSS4
-    RTS
+    RTS                          ; Return if none matched (safety return)
 
 SHOW_BOSS1:
-    LEA BOSS1_MSG, A1
-    BRA SHOW_BOSS_MSG
+    LEA BOSS1_MSG, A1            ; Load address of boss 1 introduction message
+    BRA SHOW_BOSS_MSG            ; Jump to common boss message display
 SHOW_BOSS2:
     LEA BOSS2_MSG, A1
     BRA SHOW_BOSS_MSG
@@ -259,19 +259,19 @@ SHOW_BOSS4:
     LEA BOSS4_MSG, A1
 
 SHOW_BOSS_MSG:
-    MOVE.W #13, D0
-    TRAP #15
+    MOVE.W #13, D0               ; Load trap code 13 (print string)
+    TRAP #15                     ; Display the selected boss message
 
-    CLR.W   $4008          
-    MOVE.B  #0, $4062
-    MOVE.B  #0, SKIP_BOSS_TURN
+    CLR.W   $4008                ; Clear stored momentum damage for boss mechanics
+    MOVE.B  #0, $4062            ; Reset last player damage value
+    MOVE.B  #0, SKIP_BOSS_TURN   ; Reset rifle skip-turn counter
     RTS
 
 ALL_BOSSES_DEFEATED:
-    LEA ALL_BOSSES_MSG, A1
+    LEA ALL_BOSSES_MSG, A1        ; Load address of message indicating all bosses are defeated
     MOVE.W #13, D0
     TRAP #15
-    BRA END_GAME
+    BRA END_GAME                  ; Jump to game ending routine
 
 *-------------------------------------------------------
 * GAMELOOP
@@ -903,8 +903,5 @@ WELCOME_MSG:
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
-
-
-
 
 
