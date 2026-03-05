@@ -554,73 +554,73 @@ ATTACK_FI: MOVE.W $4016, D0    ; Load Force Inverter HP into D0
 *-------------------------------------------------------
 APPLY_ATTACK:
     ; Check Energy First
-    MOVE.B $4001, D3        
-    CMP.B #0, D3
-    BEQ ATTACK_NO_ENERGY
+    MOVE.B $4001, D3        ; Load player's current energy into D3
+    CMP.B #0, D3            ; Check if energy is zero
+    BEQ ATTACK_NO_ENERGY    ; If no energy, branch to zero-damage handling
 
     ; Force Inverter Logic Check
     MOVE.B $4061, D2        ; Current Boss
-    CMP.B #4, D2            ; Is it Force Inverter?
-    BNE NORMAL_DMG_CALC
+    CMP.B #4, D2            ; Check if the boss is Force Inverter (boss 4)
+    BNE NORMAL_DMG_CALC        ; If not Force Inverter, use normal damage calculation
     
-    MOVE.B $4006, D3        ; Current Weather
-    CMP.B #2, D3            ; Is it Fog?
-    BNE NORMAL_DMG_CALC
+    MOVE.B $4006, D3        ; Load current weather type
+    CMP.B #2, D3            ; Check if weather is fog
+    BNE NORMAL_DMG_CALC     ; If not fog, use normal damage calculation
     MOVE.W #20, D1          ; Fog Inversion: Deal 20 Damage
-    BRA APPLY_SUBTRACTION
+    BRA APPLY_SUBTRACTION    ; Apply this damage to boss HP
 
 NORMAL_DMG_CALC:
-    MOVE.W #10, D1          ; Base Damage
-    MOVE.B $4004, D2        ; Fog Penalty
-    EXT.W D2
-    SUB.W D2, D1            ; Reduce damage by fog penalty
-    CMP.W #0, D1
-    BGE APPLY_SUBTRACTION
-    MOVE.W #0, D1
+    MOVE.W #10, D1          ; Set base attack damage to 10
+    MOVE.B $4004, D2        ; Load fog penalty value
+    EXT.W D2                ; Extend penalty to word size for arithmetic
+    SUB.W D2, D1            ; Reduce base damage by fog penalty
+    CMP.W #0, D1            ; Check if resulting damage is negative
+    BGE APPLY_SUBTRACTION    ; If non-negative, continue
+    MOVE.W #0, D1            ; Otherwise clamp damage to 0
 
 APPLY_SUBTRACTION:
-    SUB.W D1, D0            ; Subtract damage from boss HP
-    TST.W D0
-    BMI SET_HP_ZERO         
-    BRA STORE_HP
+    SUB.W D1, D0            ; Subtract calculated damage from boss HP
+    TST.W D0                ; Test resulting HP
+    BMI SET_HP_ZERO         ; If HP became negative, set to zero
+    BRA STORE_HP            ; Otherwise store the updated HP
 
 SET_HP_ZERO:
-    MOVE.W #0, D0
+    MOVE.W #0, D0            ; Force boss HP to 0 if it went below zero
 
 STORE_HP:
-    MOVE.B $4061, D2
-    CMP.B #1, D2
-    BEQ ST_GC
-    CMP.B #2, D2
-    BEQ ST_MT
-    CMP.B #3, D2
-    BEQ ST_EL
-    CMP.B #4, D2
-    BEQ ST_FI
-    BRA POST_ATTACK
+    MOVE.B $4061, D2        ; Reload current boss ID
+    CMP.B #1, D2            ; Check if boss 1
+    BEQ ST_GC                ; Store HP for Glass Cannon
+    CMP.B #2, D2            ; Check if boss 2
+    BEQ ST_MT                ; Store HP for Momentum Thief
+    CMP.B #3, D2            ; Check if boss 3
+    BEQ ST_EL                ; Store HP for Entropy Leech
+    CMP.B #4, D2             ; Check if boss 4
+    BEQ ST_FI                ; Store HP for Force Inverter
+    BRA POST_ATTACK          ; Otherwise skip to post-attack processing
 
-ST_GC: MOVE.W D0, $4010
+ST_GC: MOVE.W D0, $4010    ; Save updated HP for Glass Cannon
     BRA POST_ATTACK
-ST_MT: MOVE.W D0, $4012
+ST_MT: MOVE.W D0, $4012    ; Save updated HP for Momentum Thief
     BRA POST_ATTACK
-ST_EL: MOVE.W D0, $4014
+ST_EL: MOVE.W D0, $4014    ; Save updated HP for Entropy Leech
     BRA POST_ATTACK
-ST_FI: MOVE.W D0, $4016
+ST_FI: MOVE.W D0, $4016    ; Save updated HP for Force Inverter
 
 POST_ATTACK:
-    MOVE.B $4001, D0        ; Reduce Energy
-    SUB.B #5, D0
-    CMP.B #0, D0
-    BGE OK_EN
-    MOVE.B #0, D0
+    MOVE.B $4001, D0        ; Load player's energy
+    SUB.B #5, D0            ; Reduce energy by 5 for performing attack
+    CMP.B #0, D0            ; Check if energy dropped below zero
+    BGE OK_EN                ; If still >=0 keep it
+    MOVE.B #0, D0            ; Otherwise clamp energy to zero
 OK_EN:
-    MOVE.B D0, $4001
-    MOVE.B D1, $4062        ; Store for Momentum Thief
-    BRA GP_RETURN
+    MOVE.B D0, $4001        ; Store updated energy value
+    MOVE.B D1, $4062        ; Store last damage dealt (used by Momentum Thief mechanic)
+    BRA GP_RETURN            ; Return to gameplay
 
 ATTACK_NO_ENERGY:
-    MOVE.W #0, D1           ; No energy = 0 damage
-    BRA APPLY_SUBTRACTION
+    MOVE.W #0, D1           ; If no energy, attack deals 0 damage
+    BRA APPLY_SUBTRACTION    ; Continue attack logic with zero damage
 
 *-------------------------------------------------------
 * PLAYER RIFLE
@@ -903,6 +903,7 @@ WELCOME_MSG:
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
+
 
 
 
