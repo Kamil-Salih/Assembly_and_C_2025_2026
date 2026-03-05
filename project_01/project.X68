@@ -358,130 +358,130 @@ WEATHER_EVENT_SKIP:
 * STATS
 *-------------------------------------------------------
 STATS:
-    LEA PLAYER_STATS_HDR, A1
-    MOVE.W #13, D0
-    TRAP #15
+    LEA PLAYER_STATS_HDR, A1    ; Load address of player stats header message
+    MOVE.W #13, D0               ; Trap code to print string
+    TRAP #15                    ; Display header
 
-    LEA PLAYER_HEALTH_MSG, A1
-    MOVE.W #14, D0        
+    LEA PLAYER_HEALTH_MSG, A1    ; Load "Player Health" label
+    MOVE.W #14, D0                ; Trap code to print label without newline
     TRAP #15
-    CLR.L D1
-    MOVE.B $4000, D1
-    MOVE.W #3, D0         
+    CLR.L D1                    ; Clear D1 before loading value
+    MOVE.B $4000, D1            ; Load player health into D1
+    MOVE.W #3, D0                 ; Trap code to print number
     TRAP #15
-    BSR ENDL              
+    BSR ENDL                  ; Print newline
 
-    LEA ENERGY_MSG, A1
+    LEA ENERGY_MSG, A1        ; Load "Energy" label
     MOVE.W #14, D0
     TRAP #15
     CLR.L D1
-    MOVE.B $4001, D1
+    MOVE.B $4001, D1            ; Load player energy value
     MOVE.W #3, D0
     TRAP #15
     BSR ENDL
 
-    LEA AMMO_MSG, A1
+    LEA AMMO_MSG, A1        ; Load "Ammo" label
     MOVE.W #14, D0
     TRAP #15
     CLR.L D1
-    MOVE.B $4002, D1
+    MOVE.B $4002, D1        ; Load ammo count
     MOVE.W #3, D0
     TRAP #15
     BSR ENDL
 
-    LEA ARTIFACTS_MSG, A1
+    LEA ARTIFACTS_MSG, A1    ; Load "Artifacts" label
     MOVE.W #14, D0
     TRAP #15
     CLR.L D1
-    MOVE.B $4003, D1
+    MOVE.B $4003, D1          ; Load artifact count
     MOVE.W #3, D0
     TRAP #15
     BSR ENDL
 
-    MOVE.B $4061, D0
-    CMP.B #0, D0
-    BEQ ST_WEATHER_LABEL    
+    MOVE.B $4061, D0        ; Load current boss selection
+    CMP.B #0, D0            ; Check if a boss is active
+    BEQ ST_WEATHER_LABEL    ; If no boss, skip boss HP display
 
-    LEA BOSS_HP_LABEL_MSG, A1
+    LEA BOSS_HP_LABEL_MSG, A1    ; Load "Boss HP" label
     MOVE.W #14, D0
     TRAP #15
 
-    MOVE.B $4061, D2
-    CMP.B #1, D2
+    MOVE.B $4061, D2        ; Copy boss ID into D2
+    CMP.B #1, D2            ; Check if boss 1
     BEQ ST_BOSS1_HP
-    CMP.B #2, D2
+    CMP.B #2, D2            ; Check if boss 2
     BEQ ST_BOSS2_HP
-    CMP.B #3, D2
+    CMP.B #3, D2            ; Check if boss 3
     BEQ ST_BOSS3_HP
-    CMP.B #4, D2
+    CMP.B #4, D2            ; Check if boss 4
     BEQ ST_BOSS4_HP
-    BRA ST_BOSS_HP_DONE
+    BRA ST_BOSS_HP_DONE     ; If none matched, skip
 
 ST_BOSS1_HP:
-    CLR.L D1
-    MOVE.W $4010, D1
-    MOVE.W #3, D0
+    CLR.L D1                ; Clear D1
+    MOVE.W $4010, D1        ; Load boss 1 HP
+    MOVE.W #3, D0            ; Print number
     TRAP #15
     BRA ST_BOSS_HP_DONE
 
 ST_BOSS2_HP:
     CLR.L D1
-    MOVE.W $4012, D1
+    MOVE.W $4012, D1        ; Load boss 2 HP
     MOVE.W #3, D0
     TRAP #15
     BRA ST_BOSS_HP_DONE
 
 ST_BOSS3_HP:
     CLR.L D1
-    MOVE.W $4014, D1
+    MOVE.W $4014, D1        ; Load boss 3 HP
     MOVE.W #3, D0
     TRAP #15
     BRA ST_BOSS_HP_DONE
 
 ST_BOSS4_HP:
     CLR.L D1
-    MOVE.W $4016, D1        
+    MOVE.W $4016, D1         ; Load boss 4 HP
     MOVE.W #3, D0
     TRAP #15
     BRA ST_BOSS_HP_DONE
 
 ST_BOSS_HP_DONE:
-    BSR ENDL
+    BSR ENDL        ; Print newline after boss HP
 
 ST_WEATHER_LABEL:
-    LEA WEATHER_LABEL_MSG, A1
+    LEA WEATHER_LABEL_MSG, A1        ; Load "Weather" label
     MOVE.W #14, D0
     TRAP #15
 
-    MOVE.B $4006, D0
-    CMP.B #0, D0
+    MOVE.B $4006, D0        ; Load current weather type
+    CMP.B #0, D0            ; Check if rain
     BEQ ST_WEATHER_RAIN
-    CMP.B #1, D0
+    CMP.B #1, D0            ; Check if sun
     BEQ ST_WEATHER_SUN
-    CMP.B #2, D0
+    CMP.B #2, D0            ; Check if fog
     BEQ ST_WEATHER_FOG
-    BRA ST_WEATHER_UNKNOWN
+    BRA ST_WEATHER_UNKNOWN    ; If unknown value
 
 ST_WEATHER_RAIN:
-    LEA WEATHER_RAIN_MSG, A1
+    LEA WEATHER_RAIN_MSG, A1    ; Load rain message
     MOVE.W #13, D0
-    TRAP #15
+    TRAP #15                    ; Display weather message
     RTS
 
 ST_WEATHER_SUN:
-    LEA WEATHER_SUN_MSG, A1
+    LEA WEATHER_SUN_MSG, A1    ; Load sun message
     MOVE.W #13, D0
-    TRAP #15
+    TRAP #15   
     RTS
 
 ST_WEATHER_FOG:
-    LEA WEATHER_FOG_MSG, A1
+    LEA WEATHER_FOG_MSG, A1    ; Load fog message
     MOVE.W #13, D0
     TRAP #15
     RTS
 
 ST_WEATHER_UNKNOWN:
-    LEA WEATHER_UNKNOWN_MSG, A1
+    LEA WEATHER_UNKNOWN_MSG, A1        ; Load unknown weather message
     MOVE.W #13, D0
     TRAP #15
     RTS
@@ -903,6 +903,7 @@ WELCOME_MSG:
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
+
 
 
 
