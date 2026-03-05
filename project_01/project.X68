@@ -3,32 +3,32 @@
 * Student Name:  Kamil Salih
 * Student ID:    C00307549
 * Date:          05/03/2026
-* Description:   You’re a mercenary infiltrating a mysterious facility, battling physics-defying bosses to collect four artifacts and escape—or face death.
+* Description:   You are a mercenary infiltrating a mysterious facility, battling physics-defying bosses to collect four artifacts and escape—or face death.
 *-----------------------------------------------------------
 
-    ORG $1000
+    ORG $1000    ; Set program origin (starting memory address) to $1000
 
 *-------------------------------------------------------
 * CONSTANTS
 *-------------------------------------------------------
-EXIT            EQU 0
-MAX_HEALTH      EQU 100
-MAX_ENERGY      EQU 100
-MAX_AMMO        EQU 5
-NUM_ARTIFACTS   EQU 4
+EXIT            EQU 0    ; Constant representing exit/termination value
+MAX_HEALTH      EQU 100  ; Maximum player health value
+MAX_ENERGY      EQU 100  ; Maximum player energy value
+MAX_AMMO        EQU 5    ; Maximum amount of ammo the player can hold
+NUM_ARTIFACTS   EQU 4    ; Total number of artifacts in the game
 
-GLASS_CANNON_HEALTH   EQU 50
-MOMENTUM_THIEF_HEALTH EQU 100
-ENTROPY_LEECH_HEALTH  EQU 100
-FORCE_INVERTER_HEALTH EQU 150
+GLASS_CANNON_HEALTH   EQU 50    ; Health value for the Glass Cannon boss
+MOMENTUM_THIEF_HEALTH EQU 100    ; Health value for the Momentum Thief boss
+ENTROPY_LEECH_HEALTH  EQU 100    ; Health value for the Entropy Leech boss
+FORCE_INVERTER_HEALTH EQU 150    ; Health value for the Force Inverter boss
 
-PLAYER_ACTION   EQU $4070
-SKIP_BOSS_TURN  EQU $4063
+PLAYER_ACTION   EQU $4070        ; Memory address storing the player's selected action
+SKIP_BOSS_TURN  EQU $4063        ; Memory flag used to indicate the boss should skip its turn
 
-BOSS1_DEAD      EQU $4020
-BOSS2_DEAD      EQU $4021
-BOSS3_DEAD      EQU $4022
-BOSS4_DEAD      EQU $4023
+BOSS1_DEAD      EQU $4020        ; Memory flag indicating if boss 1 has been defeated
+BOSS2_DEAD      EQU $4021        ; Memory flag indicating if boss 2 has been defeated
+BOSS3_DEAD      EQU $4022        ; Memory flag indicating if boss 3 has been defeated
+BOSS4_DEAD      EQU $4023        ; Memory flag indicating if boss 4 has been defeated
 
 *-------------------------------------------------------
 * RESET GAME (Soft Reset)
@@ -902,4 +902,5 @@ WELCOME_MSG:
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
+
 
