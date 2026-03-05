@@ -32,30 +32,57 @@ BOSS3_DEAD      EQU $4022
 BOSS4_DEAD      EQU $4023
 
 *-------------------------------------------------------
-*VALIDATION VALUES TO BE USED, MODIFY AS NEEDED
+* RESET GAME (Soft Reset)
 *-------------------------------------------------------
-EXIT		EQU 0			;USED TO EXIT ASSEMBLY PROGRAM
-MIN_POTIONS	EQU 1			;MIN NUMBER OF SMALL POTIONS
-MAX_POTIONS	EQU 9			;MAX NUMBER OF SMALL POTIONS
-MIN_WEAPONS	EQU 1			;MIN WEAPONS (NEEDLE SWORD, ACORN SHIELD)
-MAX_WEAPONS	EQU 3			;MAX WEAPONS
-WIN_POINT	EQU 5			;BRAVERY POINTS GAINED ON SUCCESS
-LOSE_POINT	EQU 8			;BRAVERY POINTS LOST ON FAILURE
+RESET_GAME:
+    ; Player stats
+    MOVE.B  #MAX_HEALTH, $4000      ; player health
+    MOVE.B  #MAX_ENERGY, $4001      ; energy sword
+    MOVE.B  #MAX_AMMO,   $4002      ; ammo
+    MOVE.B  #0, $4003               ; artifacts
 
-DANGER_LOC  EQU 100         ;USED FOR SIMPLE COLLISION DETECTION
-                            ;* EXAMPLE FOR A HIT (GIANT FOOTSTEP)
+    ; Weather + turn state
+    MOVE.B  #0, $4004               ; fog penalty
+    MOVE.B  #0, $4005               ; turn counter
+    MOVE.B  #0, $4006               ; weather type (0=rain,1=sun,2=fog)
 
-*START OF GAME
+    ; Boss mechanics state
+    CLR.W   $4008                   ; momentum stored damage (word) — aligned even
+    MOVE.B  #0, $4061               ; current boss selection
+    MOVE.B  #0, $4062               ; last player damage
+    MOVE.B  #0, SKIP_BOSS_TURN      ; rifle skip counter
+    MOVE.B  #0, $4064               ; temp: previous energy at start of boss phase
+
+    ; Boss HP (words)
+    MOVE.W  #GLASS_CANNON_HEALTH,   $4010
+    MOVE.W  #MOMENTUM_THIEF_HEALTH, $4012
+    MOVE.W  #ENTROPY_LEECH_HEALTH,  $4014
+    MOVE.W  #FORCE_INVERTER_HEALTH, $4016
+
+    ; Boss defeated flags
+    MOVE.B  #0, BOSS1_DEAD
+    MOVE.B  #0, BOSS2_DEAD
+    MOVE.B  #0, BOSS3_DEAD
+    MOVE.B  #0, BOSS4_DEAD
+    RTS
+
+*-------------------------------------------------------
+* START
+*-------------------------------------------------------
 START:
-    MOVE.B  #100,$4000      ;PUT BRAVERY POINTS IN MEMORY LOCATION $4000
-    LEA     $4000,A3        ;ASSIGN ADDRESS A3 TO THAT MEMORY LOCATION
+    BSR RESET_GAME
+    BSR WELCOME
 
-    BSR     WELCOME         ;BRANCH TO THE WELCOME SUBROUTINE
-    ;BSR     INPUT           ;BRANCH TO THE INPUT SUBROUTINE
-    BSR     GAME            ;BRANCH TO THE GAME SUBROUTINE
+    ; print "You approach the facility..." once
+    LEA GAMEPLAY_MSG, A1
+    MOVE.W #13, D0
+    TRAP #15
+    BSR CONTINUE
 
-*GAME LOOP
-    ORG     $3000           ;THE REST OF THE PROGRAM IS TO BE LOCATED FROM 3000 ONWARDS
+    BSR SELECT_BOSS_IF_NONE
+    BSR GAME
+    SIMHALT
+    RTS
 
 *-------------------------------------------------------
 *-------------------GAME SUBROUTINE---------------------
@@ -279,6 +306,7 @@ CRLF:           DC.B    $0D,$0A,0
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
+
 
 
 
