@@ -12,7 +12,7 @@ Bosses:
 1) Boss: Glass Cannon (a cannon made of glass). Health 50. Deals 20 damage. Drops Artifact A.
 2) Boss: Momentum Thief. Every time you attack: The boss stores the damage. On its turn, it returns previous turn’s total damage back at you + bonus. Health 100. Deals 2 + previous turn’s total damage. Drops Artifact B.
 3) Boss: Entropy Leech. Every turn: It drains 10 energy automatically. If the Energy Sword’s energy hits 0: Boss heals by 5. Health 150. Deals 5 damage. Drops Artifact C.
-4) Boss: Force Inverter. He perceives weak attacks as strong and strong attacks as weak. Drops Artifact D. Health 150. Deals 5 damage. If the player attacks when there is no fog, deal 5 damage. Else, if there is fog, it deal 20 damage.
+4) Boss: Force Inverter. He perceives weak attacks as strong. Drops Artifact D. Health 150. Deals 5 damage. If the player attacks when there is fog, the player deals 20 damage.
 
 Battle mechanics:
 1) Basic attack (10 damage. Drains 5 of Energy Sword’s energy)
