@@ -118,6 +118,44 @@ END_GAME:
     RTS
 
 *-------------------------------------------------------
+* WELCOME (only at start)
+*-------------------------------------------------------
+WELCOME:
+    LEA WELCOME_MSG, A1
+    MOVE.W #13, D0
+    TRAP #15
+    BSR CONTINUE
+    RTS
+
+*-------------------------------------------------------
+* RANDOM NUMBER (0–2)
+*-------------------------------------------------------
+RANDOM_NUMBER:
+    MOVE.W #8, D0
+    TRAP #15
+    MOVE.W D1, D0
+    ANDI.W #3, D0
+    CMP.W #3, D0
+    BNE RN_OK
+    MOVE.W #2, D0
+RN_OK:
+    RTS
+
+*-------------------------------------------------------
+* SELECT_BOSS_IF_NONE (with validation 1–4)
+*-------------------------------------------------------
+SELECT_BOSS_IF_NONE:
+    MOVE.B $4061, D0
+    CMP.B #1, D0
+    BLT SB_NEED_SELECT
+    CMP.B #4, D0
+    BGT SB_NEED_SELECT
+    RTS
+SB_NEED_SELECT:
+    BSR SELECT_BOSS
+    RTS
+
+*-------------------------------------------------------
 *----------------GAMELOOP (MAIN LOOP)-------------------
 *------------------------------------------------------- 
 GAMELOOP:
@@ -347,3 +385,4 @@ WELCOME_MSG:
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
+
