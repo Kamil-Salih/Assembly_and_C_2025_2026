@@ -814,8 +814,8 @@ DEFEAT_RESTORE:
 BOSS_END:
     MOVE.B $4000, D0
     CMP.B #0, D0
-    BGT BOSS_RET
-    LEA MISSION_FAILED_MSG, A1
+    BGT BOSS_RET                    ; If alive, skip death sequence
+    LEA MISSION_FAILED_MSG, A1        ; Load "Mission Failed" message
     MOVE.W #13, D0
     TRAP #15
     SIMHALT            ; Player died, so end the simulation
@@ -826,15 +826,15 @@ BOSS_RET:
 * UTILITIES
 *-------------------------------------------------------
 CONTINUE:
-    LEA CONTINUE_MSG, A1
-    MOVE.W #13, D0
+    LEA CONTINUE_MSG, A1        ; Load the continue message
+    MOVE.W #13, D0                
     TRAP #15
-    MOVE.W #5, D0
-    TRAP #15
+    MOVE.W #5, D0                ; Trap code to wait for key press
+    TRAP #15                    ; Wait for player input
     RTS
 
 ENDL:
-    LEA CRLF, A1
+    LEA CRLF, A1                ; Load newline/carriage return string
     MOVE.W #13, D0
     TRAP #15
     RTS
@@ -844,16 +844,16 @@ ENDL:
 *-------------------------------------------------------
     ORG $3000
 
-INPUT_BUFFER:   DS.B 16
-CRLF:           DC.B $0D,$0A,0
+INPUT_BUFFER:   DS.B 16                ; Buffer for player input
+CRLF:           DC.B $0D,$0A,0        ; Carriage return + line feed + null terminator
 
-INPUT_MSG:
+INPUT_MSG:                                ; Player action menu
     DC.B 'Choose your action:',$0D,$0A
     DC.B '1. Attack (10 dmg, -5 Energy)',$0D,$0A
     DC.B '2. Rifle (skip boss turn, -1 ammo)',$0D,$0A
     DC.B '3. Flee to elevator',$0D,$0A,0
 
-PLAYER_STATS_HDR: DC.B 'PLAYER STATS:',0
+PLAYER_STATS_HDR: DC.B 'PLAYER STATS:',0    ;player stats
 PLAYER_HEALTH_MSG:      DC.B 'HEALTH: ',0
 ENERGY_MSG:             DC.B 'ENERGY SWORD''S ENERGY: ',0
 AMMO_MSG:               DC.B 'AMMO: ',0
@@ -861,23 +861,23 @@ ARTIFACTS_MSG:          DC.B 'ARTIFACTS: ',0
 BOSS_HP_LABEL_MSG:      DC.B 'BOSS HP: ',0
 WEATHER_LABEL_MSG:      DC.B 'WEATHER: ',0
 
-WEATHER_RAIN_MSG: DC.B 'Rain',$0D,$0A,0
+WEATHER_RAIN_MSG: DC.B 'Rain',$0D,$0A,0    ; Types of weather
 WEATHER_SUN_MSG:  DC.B 'Sun',$0D,$0A,0
 WEATHER_FOG_MSG:  DC.B 'Fog',$0D,$0A,0
 WEATHER_UNKNOWN_MSG: DC.B 'Unknown',$0D,$0A,0
 
 GAMEPLAY_MSG: DC.B 'You approach the facility...',0
-BOSS_SELECT_MSG: DC.B 'Choose boss to enter: 1=Glass Cannon, 2=Momentum, 3=Entropy, 4=Force',0
+BOSS_SELECT_MSG: DC.B 'Choose boss to enter: 1=Glass Cannon, 2=Momentum, 3=Entropy, 4=Force',0    ; Another player action menu
 INVALID_BOSS_MSG: DC.B 'Invalid choice! Enter 1-4.',0
 BOSS_DEAD_MSG:    DC.B 'That boss is already defeated. Choose another.',0
 INVALID_ACTION_MSG: DC.B 'Invalid action! Choose 1-3.',0
 
-BOSS1_MSG: DC.B 'Encountered Glass Cannon!',0
+BOSS1_MSG: DC.B 'Encountered Glass Cannon!',0    ; Boss encounter messages
 BOSS2_MSG: DC.B 'Encountered Momentum Thief!',0
 BOSS3_MSG: DC.B 'Encountered Entropy Leech!',0
 BOSS4_MSG: DC.B 'Encountered Force Inverter!',0
 
-BOSS1_DEFEAT_MSG: DC.B 'Glass Cannon destroyed! Artifact A acquired.',$0D,$0A,0
+BOSS1_DEFEAT_MSG: DC.B 'Glass Cannon destroyed! Artifact A acquired.',$0D,$0A,0    ; Boss death messages
 BOSS2_DEFEAT_MSG: DC.B 'Momentum Thief neutralized! Artifact B acquired.',$0D,$0A,0
 BOSS3_DEFEAT_MSG: DC.B 'Entropy Leech defeated! Artifact C acquired.',$0D,$0A,0
 BOSS4_DEFEAT_MSG: DC.B 'Force Inverter down! Artifact D acquired.',$0D,$0A,0
@@ -891,23 +891,17 @@ MISSION_FAILED_MSG: DC.B 'MISSION FAILED! YOU DIED.',0
 NO_AMMO_MSG: DC.B 'No ammo left!',0
 ALL_BOSSES_MSG: DC.B 'All bosses defeated.',$0D,$0A,0
 
-WELCOME_MSG:
+WELCOME_MSG:    ; A welcome message that prints at start of the game
     DC.B '************************************************************',$0D,$0A
     DC.B 'WELCOME TO THE INFILTRATION MISSION!',$0D,$0A
     DC.B 'Collect 4 artifacts. Survive the physics anomalies.',$0D,$0A
     DC.B '************************************************************',$0D,$0A,0
 
-    END START
+    END START        ; Mark program entry point
 
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
-
-
-
-
-
-
 
 
