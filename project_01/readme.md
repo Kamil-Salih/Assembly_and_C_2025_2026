@@ -1,3 +1,5 @@
+gameplay video link for project: https://youtu.be/axQtseadECQ
+
 Text-Based Game
 
 Story:
